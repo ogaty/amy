@@ -4,13 +4,13 @@
 <div class="container">
     <div class="list">
     <div class="list-header">
-        <span>humberger</span>
+        <a href="javascript:void(0);"><span><i class="fa fa-bars" aria-hidden="true"></i></span></a>
         <div>search-box</div>
-        <span>search-icon</span>
+        <a href="javascript:void(0);"><span><i class="fa fa-search" aria-hidden="true"></i></span></a>
     </div>
     <div class="list-body">
         <div>
-            <span>bell</span>
+            <span><i class="fa fa-bell-o" aria-hidden="true"></i></span>
         </div>
         <div>
             <ul></ul>
