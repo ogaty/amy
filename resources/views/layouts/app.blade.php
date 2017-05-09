@@ -8,7 +8,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Amy') }}</title>
 
     <!-- Styles -->
     <link rel="stylesheet" href="/font-awesome-4.7.0/css/font-awesome.min.css">
@@ -20,6 +20,8 @@
             'csrfToken' => csrf_token(),
         ]) !!};
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.6/vue.js"></script>
 </head>
 <body>
     <div id="app">
@@ -82,6 +84,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}"></script>
+@yield('script')
+<!--    <script src="{{ asset('js/app.js') }}"></script> -->
 </body>
 </html>
