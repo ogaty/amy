@@ -50,6 +50,19 @@ input[type=text] {
                 taskList: function() {
                     body.tasksActive = true;
                     body.listsActive = false;
+                    $.ajax({
+                        type: 'get',
+                        url: '/api/lists',
+                        headers: {
+                            'X-CSRF-TOKEN': window.Laravel.csrfToken
+                        },
+                        success: function() {
+                            console.log('success');
+                        },
+                        error: function() {
+                            console.log('error');
+                        }
+                    });
                 }
               }
             });

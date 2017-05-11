@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use \App\Eloquent\UsersToken;
 
 class HomeController extends Controller
 {
@@ -23,6 +26,16 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $token = new UsersToken();
+        $user = $token->where('user_id', Auth::id())->first();
+        if (is_null($user)) {
+            $random = Str::random();
+            $token->user_id = Auth::id();
+            $token->token = $random;
+            $token->save();
+        } else {
+            $random = $user->token;
+        }
+        return view('home', ['token' => $random]);
     }
 }
