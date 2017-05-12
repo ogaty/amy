@@ -14,6 +14,6 @@ class CategoriesService extends BaseService {
     }
 
     public function getList() {
-
+        return array();
     }
 }
