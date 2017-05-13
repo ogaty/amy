@@ -11,3 +11,26 @@
 .list-header {
     display: flex;
 }
+
+.listsActive {
+    ul {
+        list-style: none;
+        padding: 0;
+        li {
+            cursor: pointer;
+        }
+    }
+}
+.tasksActive {
+    ul {
+        list-style: none;
+        padding: 0;
+        li {
+            cursor: pointer;
+            padding: 1px;
+        }
+    }
+}
+.arrow {
+    cursor: pointer;
+}

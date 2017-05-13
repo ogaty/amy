@@ -22,7 +22,7 @@ input[type=text] {
 
             </div>
             <div v-if="tasksActive" v-bind:class="{'tasksActive': tasksActive}">
-                <div v-on:click="backToList">
+                <div class="arrow" v-on:click="backToList">
                 ←
                 </div>
                 <form v-on:submit="addTask">
@@ -52,7 +52,7 @@ input[type=text] {
                     body.listsActive = false;
                     $.ajax({
                         type: 'get',
-                        url: '/api/lists',
+                        url: '/api/tasklists',
                         headers: {
                             'X-CSRF-TOKEN': window.Laravel.csrfToken
                         },
@@ -100,6 +100,19 @@ input[type=text] {
                   backToList: function() {
                     body.tasksActive = false;
                     body.listsActive = true;
+                    $.ajax({
+                        type: 'get',
+                        url: '/api/categories',
+                        headers: {
+                            'X-CSRF-TOKEN': window.Laravel.csrfToken
+                        },
+                        success: function() {
+                            console.log('success');
+                        },
+                        error: function() {
+                            console.log('error');
+                        }
+                    });
                   },
                   addList: function(e) {
                       e.preventDefault();
