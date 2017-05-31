@@ -36,6 +36,7 @@ class HomeController extends Controller
         } else {
             $random = $user->token;
         }
-        return view('home', ['token' => $random]);
+        return view('home', ['token' => ['id' => $user->id,
+         'token' => $user->token, 'user_id' => $user->user_id]]);
     }
 }

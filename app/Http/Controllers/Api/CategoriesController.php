@@ -9,6 +9,6 @@ class CategoriesController extends \App\Http\Controllers\Controller
 {
     public function index() {
         $categories = new CategoriesService();
-        $categories->getList();
+        return $categories->getList();
     }
 }

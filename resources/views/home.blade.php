@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
+<script>
+        window.amy = {!! json_encode([
+            'token' => $token['token'],
+            'user_id' => $token['user_id'],
+            'token_id' => $token['id'],
+        ]) !!};
+</script>
 <style>
 input[type=text] {
     width: 100%;
@@ -54,7 +61,10 @@ input[type=text] {
                         type: 'get',
                         url: '/api/tasklists',
                         headers: {
-                            'X-CSRF-TOKEN': window.Laravel.csrfToken
+                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                            'USER-ID': window.amy.user_id,
+                            'TOKEN': window.amy.token,
+                            'TOKEN-ID': window.amy.token_id,
                         },
                         success: function() {
                             console.log('success');
@@ -104,7 +114,10 @@ input[type=text] {
                         type: 'get',
                         url: '/api/categories',
                         headers: {
-                            'X-CSRF-TOKEN': window.Laravel.csrfToken
+                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                            'USER-ID': window.amy.user_id,
+                            'TOKEN': window.amy.token,
+                            'TOKEN-ID': window.amy.token_id,
                         },
                         success: function() {
                             console.log('success');
