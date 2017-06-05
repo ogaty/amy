@@ -16,5 +16,7 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::middleware('uservalidate')->get('/categories', 'Api\CategoriesController@index');
-Route::middleware('uservalidate')->get('/tasklists', 'Api\TasksController@index');
+Route::group(['uservalidate'], function() {
+    Route::get('/categories', 'Api\CategoriesController@index');
+    Route::get('/tasklists', 'Api\TasksController@index');
+});

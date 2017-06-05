@@ -14,6 +14,37 @@ class CategoriesService extends BaseService {
     }
 
     public function getList() {
-        return array();
+        $list_lists = $this->categories->get();
+        return $list_lists->toArray();
     }
+
+    public function getListDetail($id) {
+        $detail = $this->categories->where('id', $id)->get();
+        return $detail->first()->toArray();
+    }
+
+    public function addCategory($data) {
+//        $data = $request->input('request');
+
+        $this->categories->name = $data['name'];
+        $this->categories->save();
+        return $this->categories->toArray();
+    }
+
+    public function removeCategory($data) {
+//        $data = $request->input('request');
+
+        $this->categories->where('id', $data['id'])->delete();
+        return $this->categories->toArray();
+    }
+
+    public function updateCategory($data) {
+//        $data = $request->input('request');
+
+        $this->categories->id = $data['id'];
+        $this->categories->name = $data['name'];
+        $this->categories->save($data);
+        return $this->categories->toArray();
+    }
+
 }
