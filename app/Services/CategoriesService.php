@@ -25,6 +25,15 @@ class CategoriesService extends BaseService {
 
     public function addCategory($data) {
 //        $data = $request->input('request');
+        if (!is_array($data)) {
+            return ['error' => 1];
+        }
+        if (!isset($data['name'])) {
+            return ['error' => 2];
+        }
+        if (strlen($data['name']) == 0) {
+            return ['error' => 3];
+        }
 
         $this->categories->name = $data['name'];
         $this->categories->save();
