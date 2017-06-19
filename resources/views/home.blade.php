@@ -21,7 +21,7 @@ input[type=text] {
         <div class="body" id="body">
             <div v-if="listsActive" v-bind:class="{'listsActive': listsActive}">
                 <ul>
-                    <template-lists v-for="list in lists" v-bind:name="list.name" v-bind:key="list.name"></template-lists>
+                    <template-lists v-for="list in lists" v-bind:name="list.name" v-bind:id="list.id" v-bind:key="list.name"></template-lists>
                 </ul>
                 <form v-on:submit="addList">
                 <input type="text" placeholder="リストを追加する" v-model="newList">
@@ -38,7 +38,18 @@ input[type=text] {
                 <ul>
                     <template-tasks v-for="task in tasks" v-bind:name="task.name" v-bind:key="task.name"></template-lists>
                 </ul>
+                <form method="post" id="import" enctype="multipart/form-data">
+                    <input type="file" name="import">
+                    <button type="button" id="import" v-on:click="importTasks">インポート</button>
+                </form>
             </div>
+
+<div id="myModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" id="detail-modal">
+    </div>
+  </div>
+</div>
         </div>
         </div>
     </div>
@@ -51,8 +62,9 @@ input[type=text] {
             Vue.component('template-lists', {
               template: `<li v-on:click="taskList">
                              @{{ name }}
+                             <span class="menu" v-on:click="categoriesMenu"><i class="fa fa-pencil" aria-hidden="true"></i></span>
                          </li>`,
-              props: ['name'],
+              props: ['name', 'id'],
               methods: {
                 taskList: function() {
                     body.tasksActive = true;
@@ -73,6 +85,13 @@ input[type=text] {
                             console.log('error');
                         }
                     });
+                },
+                categoriesMenu: function(e) {
+                    e.stopPropagation();
+                    console.log(this.id);
+                    $("#detail-modal").text('this is test.');
+                    $('#myModal').modal();
+                    console.log('menu');
                 }
               }
             });
@@ -89,14 +108,15 @@ input[type=text] {
             });
 
 
-
+            var listInit = function() {
+                window.initList = {!! json_encode($categories); !!}
+            }
+            listInit();
+                    
             var body = new Vue({
                 el: '#body',
                 data: {
-                    lists: [
-                        { name: 'INBOX' },
-                        { name: 'リスト1' },
-                    ],
+                    lists: window.initList,
                     tasks: [
                         { name: 'タスク１' },
                         { name: 'タスク２' }
@@ -129,10 +149,28 @@ input[type=text] {
                   },
                   addList: function(e) {
                       e.preventDefault();
-                      this.lists.push({
-                          name: this.newList
-                      });
-                      this.newList = "";
+                    $.ajax({
+                        type: 'post',
+                        url: '/api/categories/add',
+                        data: {
+                            name: this.newList
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                            'USER-ID': window.amy.user_id,
+                            'TOKEN': window.amy.token,
+                            'TOKEN-ID': window.amy.token_id,
+                        },
+                        success: function(data) {
+                          body.lists.push({
+                              name: body.newList
+                          });
+                          body.newList = "";
+                        },
+                        error: function() {
+                            console.log('error');
+                        }
+                    });
                   },
                   addTask: function(e) {
                       e.preventDefault();
@@ -140,6 +178,23 @@ input[type=text] {
                           name: this.newTask
                       });
                       this.newTask = "";
+                  },
+                  importTasks: function(e) {
+                      var fd = new FormData($("#import").get(0));
+                      $.ajax({
+                          url: '/api/uploads/import', 
+                          type: 'POST',
+                          data: fd, 
+                          processData: false,
+                          contentType: false,
+                          dataType: 'json'
+                      })
+                      .done(function( data ) {  })
+                      .fail(function( jqXHR, textStatus, errorThrown ) { 
+                          console.log('error(' + jqXHR.status + ')');
+                      })
+                      .always(function( data ) { // ... 
+                      }) ;
                   }
               }
 

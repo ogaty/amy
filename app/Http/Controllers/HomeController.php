@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use \App\Eloquent\UsersToken;
+use \App\Services\CategoriesService;
 
 class HomeController extends Controller
 {
@@ -36,7 +37,10 @@ class HomeController extends Controller
         } else {
             $random = $user->token;
         }
+        $categoriesService = new CategoriesService();
+        $categories = $categoriesService->getList();
         return view('home', ['token' => ['id' => $user->id,
-         'token' => $user->token, 'user_id' => $user->user_id]]);
+         'token' => $user->token, 'user_id' => $user->user_id],
+         'categories' => $categories]);
     }
 }

@@ -23,7 +23,7 @@ class TestsSeeder extends Seeder
         ]);
         DB::table('categories')->insert([
             'id' => 1,
-            'name' => str_random(10),
+            'name' => 'INBOX',
             'created_at' => '2017-05-01 10:00:00',
             'updated_at' => '2017-05-01 10:00:00',
         ]);

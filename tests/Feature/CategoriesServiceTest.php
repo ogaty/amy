@@ -32,6 +32,12 @@ class CategoriesServiceTest extends TestCase
     public function testAddCategory()
     {
         $category = new CategoriesService();
+        $detail = $category->addCategory("");
+        $this->assertEquals($detail['error'], 1);
+        $detail = $category->addCategory([]);
+        $this->assertEquals($detail['error'], 2);
+        $detail = $category->addCategory(['name' => '']);
+        $this->assertEquals($detail['error'], 3);
         $detail = $category->addCategory(['name' => 'testCate']);
         $this->assertEquals($detail['name'], 'testCate');
     }
