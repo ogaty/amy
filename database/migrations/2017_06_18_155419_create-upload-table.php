@@ -18,7 +18,7 @@ class CreateUploadTable extends Migration
             $table->string('name');
             $table->string('mime');
             $table->timestamps();
-            $table->softDelete();
+            $table->softDeletes();
         });
     }
 
