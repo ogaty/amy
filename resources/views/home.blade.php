@@ -69,17 +69,19 @@ input[type=text] {
                 taskList: function() {
                     body.tasksActive = true;
                     body.listsActive = false;
+                    window.listId = this.id;
                     $.ajax({
                         type: 'get',
-                        url: '/api/tasklists',
+                        url: '/api/tasklists/' + this.id,
                         headers: {
                             'X-CSRF-TOKEN': window.Laravel.csrfToken,
                             'USER-ID': window.amy.user_id,
                             'TOKEN': window.amy.token,
                             'TOKEN-ID': window.amy.token_id,
                         },
-                        success: function() {
-                            console.log('success');
+                        success: function(data) {
+                            body.tasks = data;
+                            console.log(data);
                         },
                         error: function() {
                             console.log('error');
@@ -112,12 +114,14 @@ input[type=text] {
                 window.initList = {!! json_encode($categories); !!}
             }
             listInit();
+            window.listId = 0;
                     
             var body = new Vue({
                 el: '#body',
                 data: {
                     lists: window.initList,
                     tasks: [
+                        { name: 'タスク１' },
                         { name: 'タスク１' },
                         { name: 'タスク２' }
                     ],
@@ -174,10 +178,32 @@ input[type=text] {
                   },
                   addTask: function(e) {
                       e.preventDefault();
-                      this.tasks.push({
-                          name: this.newTask
-                      });
-                      this.newTask = "";
+                      e.preventDefault();
+                    $.ajax({
+                        type: 'post',
+                        url: '/api/tasks/add',
+                        data: {
+                            task: {
+                                name: body.newTask,
+                                list_id: window.listId
+                            }
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                            'USER-ID': window.amy.user_id,
+                            'TOKEN': window.amy.token,
+                            'TOKEN-ID': window.amy.token_id,
+                        },
+                        success: function(data) {
+                          body.tasks.push({
+                            name: body.newTask
+                          });
+                          body.newTask = "";
+                        },
+                        error: function() {
+                            console.log('error');
+                        }
+                    });
                   },
                   importTasks: function(e) {
                       var fd = new FormData($("#import").get(0));

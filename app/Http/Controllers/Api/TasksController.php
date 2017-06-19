@@ -9,7 +9,18 @@ class TasksController extends \App\Http\Controllers\Controller
 {
     //
     public function index() {
-        $categories = new TasksService();
-        return $categories->getList(0);
+        $tasks = new TasksService();
+        return $tasks->getList(0);
+    }
+
+    public function lists($id) {
+        $tasks = new TasksService();
+        return $tasks->getList($id);
+    }
+
+    public function add() {
+        $data = $_POST['task'];
+        $tasks= new TasksService();
+        return $tasks->addTask($data);
     }
 }
