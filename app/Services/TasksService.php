@@ -4,6 +4,8 @@ namespace App\Services;
 use \App\Services\BaseService;
 use \App\Eloquent\Tasks;
 
+use Illuminate\Support\Facades\Log;
+
 class TasksService extends BaseService {
 
     public $tasks;
@@ -43,17 +45,17 @@ class TasksService extends BaseService {
     public function updateTask($data) {
 //        $data = $request->input('request');
 
-        $this->tasks->id = $data['id'];
+        $tasks = $this->tasks->find($data['id']);
         if (isset($data['name'])) {
-            $this->tasks->name = $data['name'];
+            $tasks->name = $data['name'];
         }
         if (isset($data['completed'])) {
-            $this->tasks->completed = $data['completed'];
+            $tasks->completed = $data['completed'];
         }
         if (isset($data['list_id'])) {
-            $this->tasks->list_id = $data['list_id'];
+            $tasks->list_id = $data['list_id'];
         }
-        $this->tasks->save($data);
-        return $this->tasks->toArray();
+        $tasks->save();
+        return $tasks->toArray();
     }
 }

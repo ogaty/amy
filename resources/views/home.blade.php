@@ -12,6 +12,9 @@
 input[type=text] {
     width: 100%;
 }
+.modal-content {
+    padding: 20px;
+}
 </style>
 <div class="container">
     <div class="row">
@@ -36,7 +39,7 @@ input[type=text] {
                 <input type="text" placeholder="new task" v-model="newTask">
                 </form>
                 <ul>
-                    <template-tasks v-for="task in tasks" v-bind:name="task.name" v-bind:key="task.name"></template-lists>
+                    <template-tasks v-for="task in tasks" v-bind:name="task.name" v-bind:id="task.id" v-bind:key="task.name"></template-lists>
                 </ul>
                 <form method="post" id="import" enctype="multipart/form-data">
                     <input type="file" name="import">
@@ -47,6 +50,18 @@ input[type=text] {
 <div id="myModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" id="detail-modal">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="modal-title"></h4>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="modal-rename">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" v-on:click="renameCategory">rename</button>
+        <button type="button" class="btn" v-on:click="deleteCategory">delete</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
     </div>
   </div>
 </div>
@@ -78,20 +93,17 @@ input[type=text] {
                             'USER-ID': window.amy.user_id,
                             'TOKEN': window.amy.token,
                             'TOKEN-ID': window.amy.token_id,
-                        },
-                        success: function(data) {
-                            body.tasks = data;
-                            console.log(data);
-                        },
-                        error: function() {
-                            console.log('error');
                         }
+                    }).done(function(data) {
+                        body.tasks = data;
+                    }).fail(function() {
+                        console.log('error');
                     });
                 },
                 categoriesMenu: function(e) {
                     e.stopPropagation();
                     console.log(this.id);
-                    $("#detail-modal").text('this is test.');
+                    $("#modal-title").text(this.name);
                     $('#myModal').modal();
                     console.log('menu');
                 }
@@ -100,11 +112,35 @@ input[type=text] {
 
             Vue.component('template-tasks', {
               template: `<li v-on:click="taskDetail">
+                             <input type="checkbox" v-on:click="taskComplete">
                              @{{ name }}
                          </li>`,
-              props: ['name'],
+              props: ['name', 'id'],
               methods: {
                 taskDetail: function() {
+                },
+                taskComplete: function() {
+                    $.ajax({
+                        type: 'post',
+                        url: '/api/tasks/complete',
+                        data: {
+                            task: {
+                                id: this.id,
+                                completed: 1
+                            }
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                            'USER-ID': window.amy.user_id,
+                            'TOKEN': window.amy.token,
+                            'TOKEN-ID': window.amy.token_id,
+                        }
+                    }).done(function(ret) {
+                        console.log('success');
+                        console.log(ret);
+                    }).fail(function() {
+                        console.log('error');
+                    });
                 }
               }
             });
@@ -121,9 +157,6 @@ input[type=text] {
                 data: {
                     lists: window.initList,
                     tasks: [
-                        { name: 'タスク１' },
-                        { name: 'タスク１' },
-                        { name: 'タスク２' }
                     ],
                     listsActive: true,
                     tasksActive: false,
@@ -142,13 +175,11 @@ input[type=text] {
                             'USER-ID': window.amy.user_id,
                             'TOKEN': window.amy.token,
                             'TOKEN-ID': window.amy.token_id,
-                        },
-                        success: function() {
-                            console.log('success');
-                        },
-                        error: function() {
-                            console.log('error');
                         }
+                    }).done(function() {
+                        console.log('success');
+                    }).fail(function() {
+                        console.log('error');
                     });
                   },
                   addList: function(e) {
@@ -164,20 +195,17 @@ input[type=text] {
                             'USER-ID': window.amy.user_id,
                             'TOKEN': window.amy.token,
                             'TOKEN-ID': window.amy.token_id,
-                        },
-                        success: function(data) {
+                        }
+                    }).done(function(data) {
                           body.lists.push({
                               name: body.newList
                           });
                           body.newList = "";
-                        },
-                        error: function() {
-                            console.log('error');
-                        }
+                    }).fail(function() {
+                          console.log('error');
                     });
                   },
                   addTask: function(e) {
-                      e.preventDefault();
                       e.preventDefault();
                     $.ajax({
                         type: 'post',
@@ -193,17 +221,15 @@ input[type=text] {
                             'USER-ID': window.amy.user_id,
                             'TOKEN': window.amy.token,
                             'TOKEN-ID': window.amy.token_id,
-                        },
-                        success: function(data) {
+                        }
+                    }).done(function(data) {
                           body.tasks.push({
                             name: body.newTask
                           });
                           body.newTask = "";
-                        },
-                        error: function() {
+                        }).fail(function() {
                             console.log('error');
-                        }
-                    });
+                        });
                   },
                   importTasks: function(e) {
                       var fd = new FormData($("#import").get(0));
@@ -221,6 +247,12 @@ input[type=text] {
                       })
                       .always(function( data ) { // ... 
                       }) ;
+                  },
+                  renameCategory: function(e) {
+                      console.log('rename');
+                  },
+                  deleteCategory: function(e) {
+                      console.log('delete');
                   }
               }
 

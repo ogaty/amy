@@ -17,13 +17,19 @@ class CategoriesController extends \App\Http\Controllers\Controller
     public function add() {
         Log::info(var_export($_POST, true));
         if (strlen($_POST['name']) == 0) {
-            return ['error' => 100, 'message' => 'no title'];
+            return ['error' => 'no title', 'message' => 'no title'];
         }
         $categories = new CategoriesService();
         $ret = $categories->addCategory(['name' => $_POST['name']]);
         if (isset($ret['error'])) {
             return ['error' => $ret['error'], 'message' => 'error' . $ret['error']];
         }
-        return ['error' => 0, 'message' => 'success'];
+        return ['error' => 'success', 'message' => 'success'];
+    }
+
+    public function detail($id) {
+        $categories = new CategoriesService();
+        $detail = $categories->getListDetail($id);
+        return ['error' => 'success', 'data' => json_encode($detail)];
     }
 }

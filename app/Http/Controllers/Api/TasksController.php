@@ -23,4 +23,16 @@ class TasksController extends \App\Http\Controllers\Controller
         $tasks= new TasksService();
         return $tasks->addTask($data);
     }
+
+    public function update() {
+        $data = $_POST['task'];
+        $tasks= new TasksService();
+        return $tasks->updateTask($data);
+    }
+
+    public function complete() {
+        $data = $_POST['task'];
+        $tasks= new TasksService();
+        return $tasks->updateTask($data);
+    }
 }

@@ -19,8 +19,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::group(['uservalidate'], function() {
     Route::get('/categories', 'Api\CategoriesController@index');
     Route::post('/categories/add', 'Api\CategoriesController@add');
+    Route::get('/categories/detail', 'Api\CategoriesController@detail');
     Route::get('/tasklists', 'Api\TasksController@index');
     Route::get('/tasklists/{id}', 'Api\TasksController@lists');
     Route::post('/tasks/add', 'Api\TasksController@add');
+    Route::post('/tasks/update', 'Api\TasksController@update');
+    Route::post('/tasks/complete', 'Api\TasksController@complete');
     Route::post('/uploads/import', 'Api\UploadsController@import');
 });

@@ -52,5 +52,8 @@ class TasksServiceTest extends TestCase
         $data = ['id' => $detail['id'], 'name' => 'updateTask2'];
         $detail = $tasks->updateTask($data);
         $this->assertEquals($detail['name'], 'updateTask2');
+        $data = ['id' => $detail['id'], 'completed' => 1];
+        $detail = $tasks->updateTask($data);
+        $this->assertEquals($detail['completed'], 1);
     }
 }
