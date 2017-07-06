@@ -1836,8 +1836,8 @@ module.exports = {
         categoriesMenu: function categoriesMenu(e) {
             e.stopPropagation();
             console.log(this.id);
-            $("#modal-title").text(this.name);
-            $('#myModal').modal();
+            $("#list-modal-title").text(this.name);
+            $('#listModal').modal();
             console.log('menu');
         }
     }
@@ -1854,11 +1854,18 @@ module.exports = {
 //
 //
 //
+//
 
 module.exports = {
     props: ['name', 'id'],
     methods: {
-        taskDetail: function taskDetail() {},
+        taskDetail: function taskDetail(e) {
+            console.log('taskDetail');
+            e.stopPropagation();
+            console.log(this.id);
+            $("#task-modal-title").text(this.name);
+            $('#taskModal').modal();
+        },
         taskComplete: function taskComplete() {
             $.ajax({
                 type: 'post',
@@ -31964,7 +31971,17 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     on: {
       "click": _vm.taskComplete
     }
-  }), _vm._v("\n                         " + _vm._s(_vm.name) + "\n                     ")])
+  }), _vm._v("\n                         " + _vm._s(_vm.name) + "\n    "), _c('span', {
+    staticClass: "menu",
+    on: {
+      "click": _vm.taskDetail
+    }
+  }, [_c('i', {
+    staticClass: "fa fa-pencil",
+    attrs: {
+      "aria-hidden": "true"
+    }
+  })])])
 },staticRenderFns: []}
 module.exports.render._withStripped = true
 if (false) {

@@ -31,8 +31,8 @@ module.exports = {
                 categoriesMenu: function(e) {
                     e.stopPropagation();
                     console.log(this.id);
-                    $("#modal-title").text(this.name);
-                    $('#myModal').modal();
+                    $("#list-modal-title").text(this.name);
+                    $('#listModal').modal();
                     console.log('menu');
                 }
               }

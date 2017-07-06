@@ -49,15 +49,33 @@ input[type=text] {
                 </form>
             </div>
 
-<div id="myModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+<div id="listModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
-    <div class="modal-content" id="detail-modal">
+    <div class="modal-content" id="list-detail-modal">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title" id="modal-title"></h4>
+        <h4 class="modal-title" id="modal-list-title"></h4>
       </div>
       <div class="modal-body">
-        <input type="text" id="modal-rename">
+        <input type="text" id="modal-list-rename">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" v-on:click="renameCategory">rename</button>
+        <button type="button" class="btn" v-on:click="deleteCategory">delete</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="taskModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" id="list-detail-modal">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="modal-task-title"></h4>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="modal-task-rename">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn" v-on:click="renameCategory">rename</button>

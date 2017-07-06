@@ -2,14 +2,20 @@
     <li v-on:click="taskDetail">
                              <input type="checkbox" v-on:click="taskComplete">
                              {{ name }}
-                         </li>
+        <span class="menu" v-on:click="taskDetail"><i class="fa fa-pencil" aria-hidden="true"></i></span>
+    </li>
 </template>
 
 <script>
 module.exports = {
     props: ['name', 'id'],
     methods: {
-                taskDetail: function() {
+                taskDetail: function(e) {
+                    console.log('taskDetail');
+                    e.stopPropagation();
+                    console.log(this.id);
+                    $("#task-modal-title").text(this.name);
+                    $('#taskModal').modal();
                 },
                 taskComplete: function() {
                     $.ajax({
