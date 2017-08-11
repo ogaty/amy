@@ -6,62 +6,63 @@
  */
 
 require('./bootstrap');
+//import VueRouter from 'vue-router'
+//import router from './router'
+import Vue from 'vue'
 
-window.Vue = require('vue');
-
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
-
+Vue.debug = true;
+//Vue.use(VueRouter)
 Vue.config.debug = true;
-Vue.component('templatelists', require('./components/Lists.vue'));
+//Vue.component('templateCategories', require('./components/Categoriesa.vue'));
+//Vue.component('templatetasks', require('./components/Tasks.vue'));
 
-Vue.component('templatetasks', require('./components/Tasks.vue'));
+//from templateCategories import './components/Categoriesa.vue';
+//import templatecategories from './components/Categoriesa';
+//import templatecategories from './components/Categories';
+//import templatetasks from './components/Tasks';
+//import templatedetail from './components/Detail';
+import templateamy from './components/Amy';
 
 window.listId = 0;
 
-console.log(this);
 window.main = new Vue({
     el: '#body',
+    components: {
+        templateamy
+    },
     data: {
         lists: window.initList,
         tasks: [
-    ],
-    listsActive: true,
-    tasksActive: false,
-    newTask: "",
-    newList: ""
+        ],
+        newTask: "",
+        newList: ""
     },
-                methods: {
-                  backToList: function() {
-                    main.tasksActive = false;
-                    main.listsActive = true;
-                    $.ajax({
-                        type: 'get',
-                        url: '/api/categories',
-                        headers: {
-                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
-                            'USER-ID': window.amy.user_id,
-                            'TOKEN': window.amy.token,
-                            'TOKEN-ID': window.amy.token_id,
-                        }
-                    }).done(function() {
-                        console.log('success');
-                    }).fail(function() {
-                        console.log('error');
-                    });
-                  },
-                  addList: function(e) {
-                      e.preventDefault();
-                    $.ajax({
-                        type: 'post',
-                        url: '/api/categories/add',
-                        data: {
-                            name: this.newList
-                        },
-                        headers: {
+    methods: {
+        backToList: function() {
+            $.ajax({
+                type: 'get',
+                url: '/api/categories',
+                headers: {
+                    'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                    'USER-ID': window.amy.user_id,
+                    'TOKEN': window.amy.token,
+                    'TOKEN-ID': window.amy.token_id,
+                }
+            }).done(function() {
+                console.log('success');
+            }).fail(function() {
+                console.log('error');
+            });
+        },
+        addCategory: function(e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'post',
+                url: '/api/categories/add',
+                data: {
+                    name: this.newList
+                },
+                headers: {
                             'X-CSRF-TOKEN': window.Laravel.csrfToken,
                             'USER-ID': window.amy.user_id,
                             'TOKEN': window.amy.token,
@@ -75,32 +76,6 @@ window.main = new Vue({
                     }).fail(function() {
                           console.log('error');
                     });
-                  },
-                  addTask: function(e) {
-                      e.preventDefault();
-                    $.ajax({
-                        type: 'post',
-                        url: '/api/tasks/add',
-                        data: {
-                            task: {
-                                name: main.newTask,
-                                list_id: window.listId
-                            }
-                        },
-                        headers: {
-                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
-                            'USER-ID': window.amy.user_id,
-                            'TOKEN': window.amy.token,
-                            'TOKEN-ID': window.amy.token_id,
-                        }
-                    }).done(function(data) {
-                          main.tasks.push({
-                            name: main.newTask
-                          });
-                          main.newTask = "";
-                        }).fail(function() {
-                            console.log('error');
-                        });
                   },
                   importTasks: function(e) {
                       var fd = new FormData($("#import").get(0));

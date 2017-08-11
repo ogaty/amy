@@ -21,6 +21,12 @@ class TasksServiceTest extends TestCase
         $lists = $tasks->getList(1);
         $this->assertNotEmpty($lists);
         $this->assertNotEmpty($lists[0]['name']);
+        $cnt = count($lists);
+        $data = ['id' => $lists[0]['id'], 'completed' => 1];
+        $detail = $tasks->updateTask($data);
+        $lists = $tasks->getList(1);
+        $cnt2 = count($lists);
+        $this->assertEquals($cnt2, $cnt - 1);
         $lists = $tasks->getList(-1);
         $this->assertEmpty($lists);
     }

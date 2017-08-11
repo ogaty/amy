@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use \App\Eloquent\UsersToken;
+use App\Services\TasksService;
 use \App\Services\CategoriesService;
 
 class HomeController extends Controller
@@ -39,8 +40,17 @@ class HomeController extends Controller
         }
         $categoriesService = new CategoriesService();
         $categories = $categoriesService->getList();
-        return view('home', ['token' => ['id' => $user->id,
-         'token' => $user->token, 'user_id' => $user->user_id],
-         'categories' => $categories]);
+        $tasksService = new TasksService();
+        $tasks = $tasksService->getList(1);
+
+        return view('home', [
+            'token' => [
+                'id' => $user->id,
+                'token' => $user->token,
+                'user_id' => $user->user_id
+            ],
+            'categories' => $categories,
+            'tasks' => $tasks
+        ]);
     }
 }

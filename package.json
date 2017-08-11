@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "gulp": "^3.9.1",
-    "node-sass": "^4.5.2"
+    "node-sass": "^4.5.2",
+    "vue-router": "^2.7.0"
   }
 }

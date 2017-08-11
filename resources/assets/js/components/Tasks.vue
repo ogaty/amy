@@ -1,23 +1,30 @@
 <template>
-    <li v-on:click="taskDetail">
-                             <input type="checkbox" v-on:click="taskComplete">
-                             {{ name }}
-        <span class="menu" v-on:click="taskDetail"><i class="fa fa-pencil" aria-hidden="true"></i></span>
+    <ul>
+    <li v-on:click="taskList" v-for="task in tasks">
+        {{ name }}{{ task }}
     </li>
+    </ul>
 </template>
 
 <script>
 module.exports = {
     props: ['name', 'id'],
+    data: function() {
+        return {
+            tasks: ["task1", "task2"]
+        }
+    },
     methods: {
                 taskDetail: function(e) {
                     console.log('taskDetail');
                     e.stopPropagation();
                     console.log(this.id);
-                    $("#task-modal-title").text(this.name);
+                    $("#modal-task-title").text(this.name);
+                    $("#modal-task-rename").val(this.name);
                     $('#taskModal').modal();
                 },
-                taskComplete: function() {
+                taskComplete: function(e) {
+                    e.stopPropagation(); 
                     $.ajax({
                         type: 'post',
                         url: '/api/tasks/complete',
@@ -35,7 +42,14 @@ module.exports = {
                         }
                     }).done(function(ret) {
                         console.log('success');
-                        console.log(ret);
+                        console.log($(ret));
+                        var index = 0;
+                        for (var i = 0; i < main.tasks.length; i++) {
+                            if (main.tasks[i].id == ret.id) {
+                                console.log(i);
+                            }
+                        }
+                        main.tasks.splice(index, 1);
                     }).fail(function() {
                         console.log('error');
                     });

@@ -8,6 +8,80 @@
 // Bootstrap
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
 
+body {
+    font-size: 16px;
+}
+
+ul {
+    padding-left: 24px;
+}
+
+.amy-main {
+    position: relative;
+    overflow-x: hidden;
+    width: 100%;
+    height: 500px;
+}
+
+.left {
+    position: absolute;
+    left: 0;
+    width: 250px;
+    height: 300px;
+    transition: left 1s;
+}
+.center {
+    margin-left: 270px;
+    transition: margin-left 1s;
+    max-width: 60%;
+}
+.center--head {
+    margin-left: 16px;
+}
+.center--add-task {
+    margin-left: 16px;
+    padding-left: 8px;
+}
+.right {
+    position: absolute;
+    right: 200px;
+    top: 0px;
+    transition: right 1s;
+}
+.category-list {
+    list-style: none;
+}
+.category-list--each {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+.category-list--each:hover {
+    background: rgba(0, 0, 0, .3);
+    color: #fff;
+}
+.add-category {
+    margin-left: 24px;
+    padding-left: 8px;
+}
+.task-list {
+    list-style: none;
+}
+.task-list--each {
+    display: flex;
+    justify-content: flex-start;
+    border-bottom: 1px solid #ddd;
+    margin-top: 8px;
+}
+.task-list--check {
+    margin-right: 16px;
+}
+
+.menu {
+    cursor: pointer;
+}
+
 .list-header {
     display: flex;
 }
