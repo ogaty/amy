@@ -25,11 +25,24 @@
                 <input type="hidden" id="categoryid" value="1">
             </form>
             <ul class="task-list">
-                <li class="task-list--each" v-on:click="taskDetail(task.id, $event)" v-for="task in tasks" v-bind:data-id="task.id">
-                    <span class="task-list--check">
+                <li class="task-list--each" v-for="task in tasks" v-bind:data-id="task.id">
+                    <span class="task-list--check" v-on:click="taskComplete(task.id, $event)">
                         <i class="fa fa-square-o" aria-hidden="true"></i>
                     </span>
-                    {{ task.name }}
+                    <span class="task-list--title" v-on:click="taskDetail(task.id, $event)">
+                        {{ task.name }}
+                    </span>
+                </li>
+            </ul>
+            <h2 class="completed-tasks--head">完了タスク</h2>
+            <ul class="completed-task-list">
+                <li class="completed-task-list--each" v-for="task in completedtasks" v-bind:data-id="task.id">
+                    <span class="completed-task-list--check">
+                        <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                    </span>
+                    <span class="completed-task-list--title" v-on:click="taskDetail(task.id, $event)">
+                        {{ task.name }}
+                    </span>
                 </li>
             </ul>
         </div>
@@ -50,6 +63,7 @@ module.exports = {
     data: function() {
         return {
             tasks: window.initTask,
+            completedtasks: window.initCompletedTask,
             categories: window.initList,
             centercategoryname: "INBOX",
             newCategory: "",
@@ -66,14 +80,14 @@ module.exports = {
             $("#modal-task-rename").val(this.name);
             $('#taskModal').modal();
         },
-        taskComplete: function(e) {
-            e.stopPropagation();
+        taskComplete: function(id, e) {
+            var _ = this;
             $.ajax({
                 type: 'post',
                 url: '/api/tasks/complete',
                 data: {
                     task: {
-                        id: this.id,
+                        id: id,
                         completed: 1
                     }
                 },
@@ -87,12 +101,19 @@ module.exports = {
                 console.log('success');
                 console.log($(ret));
                 var index = 0;
-                for (var i = 0; i < main.tasks.length; i++) {
-                    if (main.tasks[i].id == ret.id) {
+                for (var i = 0; i < _.tasks.length; i++) {
+                    if (_.tasks[i].id == ret.id) {
                         console.log(i);
+                        index = i;
+                        break;
                     }
                 }
-                main.tasks.splice(index, 1);
+console.log(_.tasks[index]);
+                _.completedtasks.push({
+                           name:_.tasks[index].name,
+                           id:_.tasks[index].id
+                          });
+                _.tasks.splice(index, 1);
             }).fail(function () {
                 console.log('error');
             });
@@ -145,28 +166,29 @@ module.exports = {
             var _ = this;
             $.ajax({
                 type: 'post',
-                        url: '/api/tasks/add',
-                        data: {
-                            task: {
-                                name: _.newTask,
-                                list_id: $("#categoryid").val()
-                            }
-                        },
-                        headers: {
+                url: '/api/tasks/add',
+                data: {
+                    task: {
+                        name: _.newTask,
+                        list_id: $("#categoryid").val()
+                    }
+                },
+                headers: {
                             'X-CSRF-TOKEN': window.Laravel.csrfToken,
                             'USER-ID': window.amy.user_id,
                             'TOKEN': window.amy.token,
                             'TOKEN-ID': window.amy.token_id,
-                        }
-                    }).done(function(data) {
-                          _.tasks.push({
-                            name: _.newTask
-                          });
-                          _.newTask = "";
-                        }).fail(function() {
-                            console.log('error');
-                        });
-                  },
+                }
+            }).done(function(data) {
+                _.tasks.push({
+                    name: _.newTask,
+                    id: data.id
+               });
+               _.newTask = "";
+            }).fail(function() {
+               console.log('error');
+            });
+        },
 
     }
 }

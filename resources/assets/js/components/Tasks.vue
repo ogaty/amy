@@ -46,7 +46,10 @@ module.exports = {
                         var index = 0;
                         for (var i = 0; i < main.tasks.length; i++) {
                             if (main.tasks[i].id == ret.id) {
-                                console.log(i);
+                                main.completedtasks.push({
+                                    name: ret[0].name,
+                                    id: ret[0].id
+                                });
                             }
                         }
                         main.tasks.splice(index, 1);

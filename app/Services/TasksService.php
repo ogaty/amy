@@ -20,6 +20,11 @@ class TasksService extends BaseService {
         return $task_lists->toArray();
     }
 
+    public function getCompletedList($list_id) {
+        $task_lists = $this->tasks->where('list_id', $list_id)->where('completed', 1)->get();
+        return $task_lists->toArray();
+    }
+
     public function getTask($id) {
         $task_detail = $this->tasks->where('id', $id)->get();
         return $task_detail->first()->toArray();

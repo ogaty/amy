@@ -20,7 +20,6 @@ ul {
     position: relative;
     overflow-x: hidden;
     width: 100%;
-    height: 500px;
 }
 
 .left {
@@ -76,6 +75,17 @@ ul {
 }
 .task-list--check {
     margin-right: 16px;
+}
+.completed-tasks--head {
+    margin-left: 16px;
+}
+.completed-task-list {
+    list-style: none;
+}
+.completed-task-list--each {
+    text-decoration: line-through;
+    border-bottom: 1px solid #ddd;
+    margin-top: 8px;
 }
 
 .menu {

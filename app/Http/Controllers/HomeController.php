@@ -42,6 +42,7 @@ class HomeController extends Controller
         $categories = $categoriesService->getList();
         $tasksService = new TasksService();
         $tasks = $tasksService->getList(1);
+        $completedTasks = $tasksService->getCompletedList(1);
 
         return view('home', [
             'token' => [
@@ -50,7 +51,8 @@ class HomeController extends Controller
                 'user_id' => $user->user_id
             ],
             'categories' => $categories,
-            'tasks' => $tasks
+            'tasks' => $tasks,
+            'completed_tasks' => $completedTasks
         ]);
     }
 }

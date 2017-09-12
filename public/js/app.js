@@ -1768,12 +1768,26 @@ module.exports = function spread(callback) {
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 module.exports = {
     props: ['categoryname', 'categoryid', 'taskname', 'taskid'],
     data: function data() {
         return {
             tasks: window.initTask,
+            completedtasks: window.initCompletedTask,
             categories: window.initList,
             centercategoryname: "INBOX",
             newCategory: "",
@@ -1790,14 +1804,14 @@ module.exports = {
             $("#modal-task-rename").val(this.name);
             $('#taskModal').modal();
         },
-        taskComplete: function taskComplete(e) {
-            e.stopPropagation();
+        taskComplete: function taskComplete(id, e) {
+            var _ = this;
             $.ajax({
                 type: 'post',
                 url: '/api/tasks/complete',
                 data: {
                     task: {
-                        id: this.id,
+                        id: id,
                         completed: 1
                     }
                 },
@@ -1811,12 +1825,19 @@ module.exports = {
                 console.log('success');
                 console.log($(ret));
                 var index = 0;
-                for (var i = 0; i < main.tasks.length; i++) {
-                    if (main.tasks[i].id == ret.id) {
+                for (var i = 0; i < _.tasks.length; i++) {
+                    if (_.tasks[i].id == ret.id) {
                         console.log(i);
+                        index = i;
+                        break;
                     }
                 }
-                main.tasks.splice(index, 1);
+                console.log(_.tasks[index]);
+                _.completedtasks.push({
+                    name: _.tasks[index].name,
+                    id: _.tasks[index].id
+                });
+                _.tasks.splice(index, 1);
             }).fail(function () {
                 console.log('error');
             });
@@ -1884,7 +1905,8 @@ module.exports = {
                 }
             }).done(function (data) {
                 _.tasks.push({
-                    name: _.newTask
+                    name: _.newTask,
+                    id: data.id
                 });
                 _.newTask = "";
             }).fail(function () {
@@ -31988,6 +32010,9 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       }
     })])])
   })), _vm._v(" "), _c('form', {
+    attrs: {
+      "autocomplete": "off"
+    },
     on: {
       "submit": function($event) {
         $event.preventDefault();
@@ -32021,6 +32046,9 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   }, [_c('h2', {
     staticClass: "center--head"
   }, [_vm._v(_vm._s(_vm.centercategoryname))]), _vm._v(" "), _c('form', {
+    attrs: {
+      "autocomplete": "off"
+    },
     on: {
       "submit": function($event) {
         $event.preventDefault();
@@ -32060,13 +32088,50 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   }, _vm._l((_vm.tasks), function(task) {
     return _c('li', {
       staticClass: "task-list--each",
-      on: {
-        "click": _vm.taskDetail
+      attrs: {
+        "data-id": task.id
       }
-    }, [_vm._m(1, true), _vm._v("\n                    " + _vm._s(task.name) + "\n                ")])
+    }, [_c('span', {
+      staticClass: "task-list--check",
+      on: {
+        "click": function($event) {
+          _vm.taskComplete(task.id, $event)
+        }
+      }
+    }, [_c('i', {
+      staticClass: "fa fa-square-o",
+      attrs: {
+        "aria-hidden": "true"
+      }
+    })]), _vm._v(" "), _c('span', {
+      staticClass: "task-list--title",
+      on: {
+        "click": function($event) {
+          _vm.taskDetail(task.id, $event)
+        }
+      }
+    }, [_vm._v("\n                    " + _vm._s(task.name) + "\n                ")])])
+  })), _vm._v(" "), _c('h2', {
+    staticClass: "completed-tasks--head"
+  }, [_vm._v("完了タスク")]), _vm._v(" "), _c('ul', {
+    staticClass: "completed-task-list"
+  }, _vm._l((_vm.completedtasks), function(task) {
+    return _c('li', {
+      staticClass: "completed-task-list--each",
+      attrs: {
+        "data-id": task.id
+      }
+    }, [_vm._m(1, true), _vm._v(" "), _c('span', {
+      staticClass: "completed-task-list--title",
+      on: {
+        "click": function($event) {
+          _vm.taskDetail(task.id, $event)
+        }
+      }
+    }, [_vm._v("\n                    " + _vm._s(task.name) + "\n                ")])])
   }))]), _vm._v(" "), _c('div', {
     staticClass: "right"
-  }, [_vm._v("\ndetail\n        ")])])
+  }, [_vm._v("\n        detail\n    ")])])
 },staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', {
     staticClass: "modal fade",
@@ -32088,9 +32153,9 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   })])])])
 },function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('span', {
-    staticClass: "task-list--check"
+    staticClass: "completed-task-list--check"
   }, [_c('i', {
-    staticClass: "fa fa-square-o",
+    staticClass: "fa fa-check-square-o",
     attrs: {
       "aria-hidden": "true"
     }
