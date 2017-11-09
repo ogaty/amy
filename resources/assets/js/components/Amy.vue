@@ -18,36 +18,69 @@
                 </div>
             </div>
         </div>
-        <div class="center">
-            <h2 class="center--head">{{ centercategoryname }}</h2>
-            <form v-on:submit.prevent="addTask" autocomplete="off">
-                <input type="text" class="center--add-task" name="add-task" v-model="newTask" placeholder="add task">
-                <input type="hidden" id="categoryid" value="1">
-            </form>
-            <ul class="task-list">
-                <li class="task-list--each" v-for="task in tasks" v-bind:data-id="task.id">
-                    <span class="task-list--check" v-on:click="taskComplete(task.id, $event)">
-                        <i class="fa fa-square-o" aria-hidden="true"></i>
-                    </span>
-                    <span class="task-list--title" v-on:click="taskDetail(task.id, $event)">
-                        {{ task.name }}
-                    </span>
-                </li>
-            </ul>
-            <h2 class="completed-tasks--head">完了タスク</h2>
-            <ul class="completed-task-list">
-                <li class="completed-task-list--each" v-for="task in completedtasks" v-bind:data-id="task.id">
-                    <span class="completed-task-list--check">
-                        <i class="fa fa-check-square-o" aria-hidden="true"></i>
-                    </span>
-                    <span class="completed-task-list--title" v-on:click="taskDetail(task.id, $event)">
-                        {{ task.name }}
-                    </span>
-                </li>
-            </ul>
-        </div>
-        <div class="right">
-            detail
+        <div class="task-wrap">
+            <div class="task-wrap-left">
+                <h2 class="task-wrap-left--head">{{ centercategoryname }}</h2>
+                <form v-on:submit.prevent="addTask" autocomplete="off">
+                    <input type="text" class="task-wrap-left--add-task" name="add-task" v-model="newTask" placeholder="add task">
+                    <input type="hidden" id="categoryid" value="1">
+                </form>
+                <ul class="task-list">
+                    <li class="task-list--each" v-for="task in tasks" v-bind:data-id="task.id">
+                        <span class="task-list--check" v-on:click="taskComplete(task.id, $event)">
+                            <i class="fa fa-square-o" aria-hidden="true"></i>
+                        </span>
+                        <span class="task-list--title">
+                            {{ task.name }}
+                        </span>
+                        <span v-on:click="taskDetail(task, $event)">
+                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                        </span>
+                    </li>
+                </ul>
+                <h2 class="completed-tasks--head">完了タスク</h2>
+                <ul class="completed-task-list">
+                    <li class="completed-task-list--each" v-for="task in completedtasks" v-bind:data-id="task.id">
+                        <span class="completed-task-list--check">
+                            <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                        </span>
+                        <span class="completed-task-list--title" v-on:click="taskDetail(task.id, $event)">
+                            {{ task.name }}
+                        </span>
+                    </li>
+                </ul>
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" onclick="$('#myModal').modal();">
+  Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+            </div>
+            <div class="task-wrap-right">
+                <h1>{{ detail.name }}</h1>
+                <div class="task-detail-memo">
+                    <input type="text" v-bind:value="detail.memo">
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -65,20 +98,21 @@ module.exports = {
             tasks: window.initTask,
             completedtasks: window.initCompletedTask,
             categories: window.initList,
+            detail: window.initDetail,
             centercategoryname: "INBOX",
             newCategory: "",
             newTask: "",
-            listId: 1
+            listId: 1,
+            category_id: 0
         }
     },
     methods: {
-        taskDetail: function(e) {
+        taskDetail: function(task, e) {
             console.log('taskDetail');
             e.stopPropagation();
-            console.log(this.id);
-            $("#modal-task-title").text(this.name);
-            $("#modal-task-rename").val(this.name);
-            $('#taskModal').modal();
+            this.detail.name = task.name;
+            this.detail.memo = task.memo;
+                    $('#myModal').modal();
         },
         taskComplete: function(id, e) {
             var _ = this;
@@ -108,7 +142,6 @@ module.exports = {
                         break;
                     }
                 }
-console.log(_.tasks[index]);
                 _.completedtasks.push({
                            name:_.tasks[index].name,
                            id:_.tasks[index].id
@@ -120,22 +153,12 @@ console.log(_.tasks[index]);
         },
         taskList: function (id, event) {
             var _ = this;
+            this.category_id = id;
             $("#categoryid").val(id);
-            $.ajax({
-                type: 'get',
-                url: '/api/tasklists/' + id,
-                headers: {
-                    'X-CSRF-TOKEN': window.Laravel.csrfToken,
-                    'USER-ID': window.amy.user_id,
-                    'TOKEN': window.amy.token,
-                    'TOKEN-ID': window.amy.token_id,
-                }
-            }).done(function (data) {
-                console.log(data);
-                _.tasks = data;
-            }).fail(function () {
-                console.log('error');
-            });
+            axios.get('/api/tasklists/' + id)
+                .then(function(response) {
+                    _.tasks = response.data;
+                });
         },
         categoryMenu: function(e) {
                     $('#category-modal-title').text($(e.currentTarget).parent().find('.title').text());
@@ -170,7 +193,8 @@ console.log(_.tasks[index]);
                 data: {
                     task: {
                         name: _.newTask,
-                        list_id: $("#categoryid").val()
+                        list_id: _.category_id
+//                        list_id: $("#categoryid").val()
                     }
                 },
                 headers: {

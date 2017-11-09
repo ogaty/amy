@@ -52,7 +52,11 @@ class HomeController extends Controller
             ],
             'categories' => $categories,
             'tasks' => $tasks,
-            'completed_tasks' => $completedTasks
+            'completed_tasks' => $completedTasks,
+            'detail' => [
+                'name' => '',
+                'memo' => ''
+            ] 
         ]);
     }
 }

@@ -34,72 +34,9 @@ window.main = new Vue({
         lists: window.initList,
         tasks: [
         ],
+        details: [
+        ],
         newTask: "",
         newList: ""
-    },
-    methods: {
-        backToList: function() {
-            $.ajax({
-                type: 'get',
-                url: '/api/categories',
-                headers: {
-                    'X-CSRF-TOKEN': window.Laravel.csrfToken,
-                    'USER-ID': window.amy.user_id,
-                    'TOKEN': window.amy.token,
-                    'TOKEN-ID': window.amy.token_id,
-                }
-            }).done(function() {
-                console.log('success');
-            }).fail(function() {
-                console.log('error');
-            });
-        },
-        addCategory: function(e) {
-            e.preventDefault();
-            $.ajax({
-                type: 'post',
-                url: '/api/categories/add',
-                data: {
-                    name: this.newList
-                },
-                headers: {
-                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
-                            'USER-ID': window.amy.user_id,
-                            'TOKEN': window.amy.token,
-                            'TOKEN-ID': window.amy.token_id,
-                        }
-                    }).done(function(data) {
-                          main.lists.push({
-                              name: main.newList
-                          });
-                          main.newList = "";
-                    }).fail(function() {
-                          console.log('error');
-                    });
-                  },
-                  importTasks: function(e) {
-                      var fd = new FormData($("#import").get(0));
-                      $.ajax({
-                          url: '/api/uploads/import',
-                          type: 'POST',
-                          data: fd,
-                          processData: false,
-                          contentType: false,
-                          dataType: 'json'
-                      })
-                      .done(function( data ) {  })
-                      .fail(function( jqXHR, textStatus, errorThrown ) {
-                          console.log('error(' + jqXHR.status + ')');
-                      })
-                      .always(function( data ) { // ...
-                      }) ;
-                  },
-                  renameCategory: function(e) {
-                      console.log('rename');
-                  },
-                  deleteCategory: function(e) {
-                      console.log('delete');
-                  }
-              }
-
-        });
+    }
+});
