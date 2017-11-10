@@ -25,7 +25,12 @@ class TasksController extends \App\Http\Controllers\Controller
     }
 
     public function update() {
-        $data = $_POST['task'];
+        $data = [
+            'id' => $_POST['id'],
+            'name' => $_POST['name'],
+            'memo' => $_POST['memo'],
+            'deadline' => $_POST['deadline'],
+        ];
         $tasks= new TasksService();
         return $tasks->updateTask($data);
     }

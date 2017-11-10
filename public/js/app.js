@@ -996,13 +996,7 @@ window.main = new __WEBPACK_IMPORTED_MODULE_0_vue___default.a({
     components: {
         templateamy: __WEBPACK_IMPORTED_MODULE_1__components_Amy___default.a
     },
-    data: {
-        lists: window.initList,
-        tasks: [],
-        details: [],
-        newTask: "",
-        newList: ""
-    }
+    data: {}
 });
 
 /***/ }),
@@ -1942,7 +1936,6 @@ module.exports = function spread(callback) {
 //
 //
 //
-//
 
 module.exports = {
     props: ['categoryname', 'categoryid', 'taskname', 'taskid'],
@@ -1955,6 +1948,9 @@ module.exports = {
             centercategoryname: "INBOX",
             newCategory: "",
             newTask: "",
+            detailName: "",
+            detailMemo: "",
+            detailDeadLine: "",
             listId: 1,
             category_id: 0
         };
@@ -1962,10 +1958,16 @@ module.exports = {
     methods: {
         taskDetail: function taskDetail(task, e) {
             console.log('taskDetail');
+            console.log(task.name);
             e.stopPropagation();
             this.detail.name = task.name;
             this.detail.memo = task.memo;
-            $('#myModal').modal();
+            this.detail.id = task.id;
+            this.detail.deadline = task.deadline;
+            this.detailName = task.name;
+            this.detailMemo = task.memo;
+            this.detailDeadLine = task.deadline;
+            //            $('.ui.modal').modal();
         },
         taskComplete: function taskComplete(id, e) {
             var _ = this;
@@ -2063,6 +2065,19 @@ module.exports = {
                 _.newTask = "";
             }).fail(function () {
                 console.log('error');
+            });
+        },
+        updateDetail: function updateDetail(detail, event) {
+            var params = new URLSearchParams();
+            params.append('id', detail.id);
+            params.append('name', this.detailName);
+            params.append('memo', this.detailMemo);
+            params.append('deadline', this.detailDeadLine);
+            console.log(params);
+            axios.post('/api/tasks/update', params, {
+                headers: { 'X-CSRF-TOKEN': window.Laravel.csrfToken }
+            }).then(function (response) {
+                console.log('ok');
             });
         }
 
@@ -32115,7 +32130,7 @@ var Component = __webpack_require__(37)(
   /* cssModules */
   null
 )
-Component.options.__file = "/www/amy/resources/assets/js/components/Amy.vue"
+Component.options.__file = "/share/www/amy/resources/assets/js/components/Amy.vue"
 if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key !== "__esModule"})) {console.error("named exports are not supported in *.vue files.")}
 if (Component.options.functional) {console.error("[vue-loader] Amy.vue: functional components are not supported with templates, they should use render functions.")}
 
@@ -32200,7 +32215,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   return _c('div', {
     staticClass: "wrap"
   }, [_c('div', {
-    staticClass: "left"
+    staticClass: "left-box"
   }, [_c('ul', {
     staticClass: "category-list"
   }, _vm._l((_vm.categories), function(list) {
@@ -32303,78 +32318,148 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       "id": "categoryid",
       "value": "1"
     }
-  })]), _vm._v(" "), _c('ul', {
-    staticClass: "task-list"
+  })]), _vm._v(" "), _c('div', {
+    staticClass: "ui middle aligned divided list task-list"
   }, _vm._l((_vm.tasks), function(task) {
-    return _c('li', {
-      staticClass: "task-list--each",
+    return _c('div', {
+      staticClass: "task-list--each item",
       attrs: {
         "data-id": task.id
       }
-    }, [_c('span', {
-      staticClass: "task-list--check",
-      on: {
-        "click": function($event) {
-          _vm.taskComplete(task.id, $event)
-        }
-      }
-    }, [_c('i', {
-      staticClass: "fa fa-square-o",
-      attrs: {
-        "aria-hidden": "true"
-      }
-    })]), _vm._v(" "), _c('span', {
-      staticClass: "task-list--title"
-    }, [_vm._v("\n                            " + _vm._s(task.name) + "\n                        ")]), _vm._v(" "), _c('span', {
+    }, [_c('div', {
+      staticClass: "right floated content",
       on: {
         "click": function($event) {
           _vm.taskDetail(task, $event)
         }
       }
     }, [_c('i', {
-      staticClass: "fa fa-pencil",
+      staticClass: "pencil icon",
       attrs: {
         "aria-hidden": "true"
       }
-    })])])
+    })]), _vm._v(" "), _c('div', {
+      staticClass: "content"
+    }, [_c('div', {
+      staticClass: "ui checkbox"
+    }, [_c('input', {
+      attrs: {
+        "type": "checkbox"
+      },
+      on: {
+        "click": function($event) {
+          _vm.taskComplete(task.id, $event)
+        }
+      }
+    }), _vm._v(" "), _c('label', [_vm._v(_vm._s(task.name))])])])])
   })), _vm._v(" "), _c('h2', {
     staticClass: "completed-tasks--head"
-  }, [_vm._v("完了タスク")]), _vm._v(" "), _c('ul', {
-    staticClass: "completed-task-list"
+  }, [_vm._v("完了タスク")]), _vm._v(" "), _c('div', {
+    staticClass: "ui middle aligned divided list task-list"
   }, _vm._l((_vm.completedtasks), function(task) {
-    return _c('li', {
+    return _c('div', {
       staticClass: "completed-task-list--each",
       attrs: {
         "data-id": task.id
       }
-    }, [_vm._m(1, true), _vm._v(" "), _c('span', {
-      staticClass: "completed-task-list--title",
+    }, [_c('div', {
+      staticClass: "content"
+    }, [_c('div', {
+      staticClass: "ui checkbox"
+    }, [_c('input', {
+      attrs: {
+        "type": "checkbox",
+        "checked": ""
+      },
       on: {
-        "click": function($event) {
-          _vm.taskDetail(task.id, $event)
-        }
+        "click": function($event) {}
       }
-    }, [_vm._v("\n                            " + _vm._s(task.name) + "\n                        ")])])
-  })), _vm._v(" "), _c('button', {
-    staticClass: "btn btn-primary",
-    attrs: {
-      "type": "button",
-      "data-toggle": "modal",
-      "data-target": "#exampleModal",
-      "onclick": "$('#myModal').modal();"
-    }
-  }, [_vm._v("\n  Launch demo modal\n")]), _vm._v(" "), _vm._m(2)]), _vm._v(" "), _c('div', {
+    }), _vm._v(" "), _c('label', [_vm._v(_vm._s(task.name))])])])])
+  }))]), _vm._v(" "), _c('div', {
     staticClass: "task-wrap-right"
-  }, [_c('h1', [_vm._v(_vm._s(_vm.detail.name))]), _vm._v(" "), _c('div', {
-    staticClass: "task-detail-memo"
   }, [_c('input', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.detailName),
+      expression: "detailName"
+    }],
     attrs: {
       "type": "text"
     },
     domProps: {
-      "value": _vm.detail.memo
+      "value": _vm.detail.name,
+      "value": (_vm.detailName)
+    },
+    on: {
+      "input": function($event) {
+        if ($event.target.composing) { return; }
+        _vm.detailName = $event.target.value
+      }
     }
-  })])])])])
+  }), _vm._v(" "), _c('h3', [_vm._v("期限")]), _vm._v(" "), _c('input', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.detailDeadLine),
+      expression: "detailDeadLine"
+    }],
+    attrs: {
+      "type": "date"
+    },
+    domProps: {
+      "value": _vm.detail.deadline,
+      "value": (_vm.detailDeadLine)
+    },
+    on: {
+      "input": function($event) {
+        if ($event.target.composing) { return; }
+        _vm.detailDeadLine = $event.target.value
+      }
+    }
+  }), _vm._v(" "), _c('div', {
+    staticClass: "task-detail-memo"
+  }, [_c('h3', [_vm._v("memo")]), _vm._v(" "), _c('textarea', {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: (_vm.detailMemo),
+      expression: "detailMemo"
+    }],
+    domProps: {
+      "value": _vm.detail.memo,
+      "value": (_vm.detailMemo)
+    },
+    on: {
+      "input": function($event) {
+        if ($event.target.composing) { return; }
+        _vm.detailMemo = $event.target.value
+      }
+    }
+  })]), _vm._v(" "), _c('button', {
+    on: {
+      "click": function($event) {
+        _vm.updateDetail(_vm.detail, $event)
+      }
+    }
+  }, [_vm._v("保存")])])]), _vm._v(" "), _c('div', {
+    staticClass: "ui modal"
+  }, [_c('i', {
+    staticClass: "close icon"
+  }), _vm._v(" "), _c('div', {
+    staticClass: "header"
+  }, [_vm._v("\n    Modal Title\n  ")]), _vm._v(" "), _vm._m(1), _vm._v(" "), _c('div', {
+    staticClass: "actions"
+  }, [_c('div', {
+    staticClass: "ui button"
+  }, [_vm._v("Cancel")]), _vm._v(" "), _c('div', {
+    staticClass: "ui button",
+    on: {
+      "click": function($event) {
+        _vm.$('.ui.modal').hide()
+      }
+    }
+  }, [_vm._v("OK")])])])])
 },staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', {
     staticClass: "modal fade",
@@ -32395,65 +32480,13 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     }
   })])])])
 },function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('span', {
-    staticClass: "completed-task-list--check"
-  }, [_c('i', {
-    staticClass: "fa fa-check-square-o",
-    attrs: {
-      "aria-hidden": "true"
-    }
-  })])
-},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', {
-    staticClass: "modal fade",
-    attrs: {
-      "id": "myModal",
-      "tabindex": "-1",
-      "role": "dialog",
-      "aria-labelledby": "exampleModalLabel",
-      "aria-hidden": "true"
-    }
+    staticClass: "image content"
   }, [_c('div', {
-    staticClass: "modal-dialog",
-    attrs: {
-      "role": "document"
-    }
-  }, [_c('div', {
-    staticClass: "modal-content"
-  }, [_c('div', {
-    staticClass: "modal-header"
-  }, [_c('h5', {
-    staticClass: "modal-title",
-    attrs: {
-      "id": "exampleModalLabel"
-    }
-  }, [_vm._v("Modal title")]), _vm._v(" "), _c('button', {
-    staticClass: "close",
-    attrs: {
-      "type": "button",
-      "data-dismiss": "modal",
-      "aria-label": "Close"
-    }
-  }, [_c('span', {
-    attrs: {
-      "aria-hidden": "true"
-    }
-  }, [_vm._v("×")])])]), _vm._v(" "), _c('div', {
-    staticClass: "modal-body"
-  }, [_vm._v("\n        ...\n      ")]), _vm._v(" "), _c('div', {
-    staticClass: "modal-footer"
-  }, [_c('button', {
-    staticClass: "btn btn-secondary",
-    attrs: {
-      "type": "button",
-      "data-dismiss": "modal"
-    }
-  }, [_vm._v("Close")]), _vm._v(" "), _c('button', {
-    staticClass: "btn btn-primary",
-    attrs: {
-      "type": "button"
-    }
-  }, [_vm._v("Save changes")])])])])])
+    staticClass: "image"
+  }, [_vm._v("\n      An image can appear on left or an icon\n    ")]), _vm._v(" "), _c('div', {
+    staticClass: "description"
+  }, [_vm._v("\n      A description can appear on the right\n    ")])])
 }]}
 module.exports.render._withStripped = true
 if (false) {

@@ -54,8 +54,10 @@ class HomeController extends Controller
             'tasks' => $tasks,
             'completed_tasks' => $completedTasks,
             'detail' => [
+                'id' => '',
                 'name' => '',
-                'memo' => ''
+                'memo' => '',
+                'deadline' => ''
             ] 
         ]);
     }

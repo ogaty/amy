@@ -26,7 +26,7 @@ ul {
     width: 100%;
 }
 
-.left {
+.left-box {
     position: absolute;
     left: 0;
     width: 250px;
@@ -39,7 +39,7 @@ ul {
 .task-wrap-left {
     margin-left: 270px;
     transition: margin-left 1s;
-    width: 60%;
+    width: 50%;
 }
 .task-wrap-left--head {
     margin-left: 16px;
@@ -49,9 +49,9 @@ ul {
     padding-left: 8px;
 }
 .task-wrap-right {
-    width: 0;
     overflow-x: hidden;
     transition: right 1s;
+    margin-left: 20px;
 }
 .category-list {
     list-style: none;
@@ -76,7 +76,6 @@ ul {
 .task-list--each {
     display: flex;
     justify-content: flex-start;
-    border-bottom: 1px solid #ddd;
     margin-top: 8px;
 }
 .task-list--check {
@@ -90,7 +89,6 @@ ul {
 }
 .completed-task-list--each {
     text-decoration: line-through;
-    border-bottom: 1px solid #ddd;
     margin-top: 8px;
 }
 

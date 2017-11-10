@@ -31,12 +31,5 @@ window.main = new Vue({
         templateamy
     },
     data: {
-        lists: window.initList,
-        tasks: [
-        ],
-        details: [
-        ],
-        newTask: "",
-        newList: ""
     }
 });

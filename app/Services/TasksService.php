@@ -50,6 +50,8 @@ class TasksService extends BaseService {
     public function updateTask($data) {
 //        $data = $request->input('request');
 
+        Log::debug(var_export($data, true));
+
         $tasks = $this->tasks->find($data['id']);
         if (isset($data['name'])) {
             $tasks->name = $data['name'];
@@ -60,7 +62,15 @@ class TasksService extends BaseService {
         if (isset($data['list_id'])) {
             $tasks->list_id = $data['list_id'];
         }
-        $tasks->save();
+        if (isset($data['memo'])) {
+            $tasks->memo = $data['memo'];
+        }
+        if (isset($data['deadline'])) {
+            if ($data['deadline'] != "null") {
+                $tasks->deadline = $data['deadline'];
+            }
+        }
+        $tasks->update();
         return $tasks->toArray();
     }
 }

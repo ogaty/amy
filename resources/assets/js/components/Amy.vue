@@ -1,6 +1,6 @@
 <template>
     <div class="wrap">
-        <div class="left">
+        <div class="left-box">
             <ul class="category-list">
                 <li class="category-list--each" v-on:click="taskList(list.id, $event)" v-for="list in categories" v-bind:data-id="list.id">
                     <span class="title">{{ list.name }}</span>
@@ -25,64 +25,63 @@
                     <input type="text" class="task-wrap-left--add-task" name="add-task" v-model="newTask" placeholder="add task">
                     <input type="hidden" id="categoryid" value="1">
                 </form>
-                <ul class="task-list">
-                    <li class="task-list--each" v-for="task in tasks" v-bind:data-id="task.id">
-                        <span class="task-list--check" v-on:click="taskComplete(task.id, $event)">
-                            <i class="fa fa-square-o" aria-hidden="true"></i>
-                        </span>
-                        <span class="task-list--title">
-                            {{ task.name }}
-                        </span>
-                        <span v-on:click="taskDetail(task, $event)">
-                            <i class="fa fa-pencil" aria-hidden="true"></i>
-                        </span>
-                    </li>
-                </ul>
+                <div class="ui middle aligned divided list task-list">
+                    <div class="task-list--each item" v-for="task in tasks" v-bind:data-id="task.id">
+                        <div v-on:click="taskDetail(task, $event)" class="right floated content">
+                            <i class="pencil icon" aria-hidden="true"></i>
+                        </div>
+                        <div class="content">
+                            <div class="ui checkbox">
+                                <input type="checkbox" v-on:click="taskComplete(task.id, $event)">
+                                <label>{{ task.name }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <h2 class="completed-tasks--head">完了タスク</h2>
-                <ul class="completed-task-list">
-                    <li class="completed-task-list--each" v-for="task in completedtasks" v-bind:data-id="task.id">
-                        <span class="completed-task-list--check">
-                            <i class="fa fa-check-square-o" aria-hidden="true"></i>
-                        </span>
-                        <span class="completed-task-list--title" v-on:click="taskDetail(task.id, $event)">
-                            {{ task.name }}
-                        </span>
-                    </li>
-                </ul>
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" onclick="$('#myModal').modal();">
-  Launch demo modal
-</button>
-
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
-    </div>
-  </div>
-</div>
-            </div>
-            <div class="task-wrap-right">
-                <h1>{{ detail.name }}</h1>
-                <div class="task-detail-memo">
-                    <input type="text" v-bind:value="detail.memo">
+                <div class="ui middle aligned divided list task-list">
+                    <div class="completed-task-list--each" v-for="task in completedtasks" v-bind:data-id="task.id">
+                        <div class="content">
+                            <div class="ui checkbox">
+                                <input type="checkbox" v-on:click="" checked>
+                                <label>{{ task.name }}</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div class="task-wrap-right">
+                <input type="text" v-bind:value="detail.name" v-model="detailName">
+                <h3>期限</h3>
+                <input type="date" v-bind:value="detail.deadline" v-model="detailDeadLine">
+                <div class="task-detail-memo">
+                    <h3>memo</h3>
+                    <textarea v-bind:value="detail.memo" v-model="detailMemo">
+                    </textarea>
+                </div>
+                <button v-on:click="updateDetail(detail, $event)">保存</button>
+            </div>
         </div>
+<div class="ui modal">
+  <i class="close icon"></i>
+  <div class="header">
+    Modal Title
+  </div>
+  <div class="image content">
+    <div class="image">
+      An image can appear on left or an icon
     </div>
+    <div class="description">
+      A description can appear on the right
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui button">Cancel</div>
+    <div class="ui button" v-on:click="$('.ui.modal').hide()">OK</div>
+  </div>
+</div>
+    </div>
+</div>
 </template>
 
 <script>
@@ -102,6 +101,9 @@ module.exports = {
             centercategoryname: "INBOX",
             newCategory: "",
             newTask: "",
+            detailName: "",
+            detailMemo: "",
+            detailDeadLine: "",
             listId: 1,
             category_id: 0
         }
@@ -109,10 +111,16 @@ module.exports = {
     methods: {
         taskDetail: function(task, e) {
             console.log('taskDetail');
+            console.log(task.name);
             e.stopPropagation();
             this.detail.name = task.name;
             this.detail.memo = task.memo;
-                    $('#myModal').modal();
+            this.detail.id = task.id;
+            this.detail.deadline = task.deadline;
+            this.detailName = task.name;
+            this.detailMemo = task.memo;
+            this.detailDeadLine = task.deadline;
+//            $('.ui.modal').modal();
         },
         taskComplete: function(id, e) {
             var _ = this;
@@ -213,6 +221,20 @@ module.exports = {
                console.log('error');
             });
         },
+        updateDetail: function(detail, event) {
+let params = new URLSearchParams();
+params.append('id', detail.id);
+params.append('name', this.detailName);
+params.append('memo', this.detailMemo);
+params.append('deadline', this.detailDeadLine);
+           console.log(params);
+            axios.post('/api/tasks/update', params, {
+                headers: {'X-CSRF-TOKEN': window.Laravel.csrfToken}
+})
+                .then(function(response) {
+           console.log('ok');
+                });
+        }
 
     }
 }
