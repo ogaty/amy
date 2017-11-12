@@ -2,7 +2,7 @@
     <div class="wrap">
         <div class="left-box">
             <ul class="category-list">
-                <li class="category-list--each" v-on:click="taskList(list.id, $event)" v-for="list in categories" v-bind:data-id="list.id">
+                <li class="category-list--each" v-on:click="taskList(list.id, list.name, $event)" v-for="list in categories" v-bind:data-id="list.id">
                     <span class="title">{{ list.name }}</span>
                     <span class="menu" v-on:click="categoryMenu"><i class="fa fa-pencil" aria-hidden="true"></i></span>
                 </li>
@@ -20,7 +20,7 @@
         </div>
         <div class="task-wrap">
             <div class="task-wrap-left">
-                <h2 class="task-wrap-left--head">{{ centercategoryname }}</h2>
+                <h2 class="task-wrap-left--head">{{ centerCategoryname }}</h2>
                 <form v-on:submit.prevent="addTask" autocomplete="off">
                     <input type="text" class="task-wrap-left--add-task" name="add-task" v-model="newTask" placeholder="add task">
                     <input type="hidden" id="categoryid" value="1">
@@ -50,7 +50,7 @@
                     </div>
                 </div>
             </div>
-            <div class="task-wrap-right">
+            <div class="task-wrap-right" v-if="displayDetail">
                 <input type="text" v-bind:value="detail.name" v-model="detailName">
                 <h3>期限</h3>
                 <input type="date" v-bind:value="detail.deadline" v-model="detailDeadLine">
@@ -80,13 +80,14 @@ module.exports = {
             completedtasks: window.initCompletedTask,
             categories: window.initList,
             detail: window.initDetail,
-            centercategoryname: "INBOX",
+            centerCategoryname: "INBOX",
             newCategory: "",
             newTask: "",
             detailName: "",
             detailMemo: "",
             detailDeadLine: "",
-            listId: 1
+            listId: 1,
+            displayDetail: false,
         }
     },
     methods: {
@@ -101,6 +102,7 @@ module.exports = {
             this.detailName = task.name;
             this.detailMemo = task.memo;
             this.detailDeadLine = task.deadline;
+            this.displayDetail = true;
         },
         taskComplete: function(id, e) {
             var _ = this;
@@ -139,9 +141,10 @@ module.exports = {
                 console.log('error');
             });
         },
-        taskList: function (id, event) {
+        taskList: function (id, name, event) {
             var _ = this;
             this.listId= id;
+            this.centerCategoryname = name;
             $("#categoryid").val(id);
             axios.get('/api/tasklists/' + id)
                 .then(function(response) {
