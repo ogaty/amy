@@ -19,7 +19,10 @@ class TasksController extends \App\Http\Controllers\Controller
     }
 
     public function add() {
-        $data = $_POST['task'];
+        $data = [
+            'name' => $_POST['name'],
+            'list_id' => $_POST['list_id'],
+        ];
         $tasks= new TasksService();
         return $tasks->addTask($data);
     }

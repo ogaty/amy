@@ -8,7 +8,8 @@
 require('./bootstrap');
 //import VueRouter from 'vue-router'
 //import router from './router'
-import Vue from 'vue'
+var Vue = require('vue');
+//import Vue from 'vue'
 
 Vue.debug = true;
 //Vue.use(VueRouter)
@@ -21,7 +22,8 @@ Vue.config.debug = true;
 //import templatecategories from './components/Categories';
 //import templatetasks from './components/Tasks';
 //import templatedetail from './components/Detail';
-import templateamy from './components/Amy';
+//import templateamy from './components/Amy';
+var templateamy = require('./components/Amy.vue');
 
 window.listId = 0;
 

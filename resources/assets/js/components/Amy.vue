@@ -62,24 +62,6 @@
                 <button v-on:click="updateDetail(detail, $event)">保存</button>
             </div>
         </div>
-<div class="ui modal">
-  <i class="close icon"></i>
-  <div class="header">
-    Modal Title
-  </div>
-  <div class="image content">
-    <div class="image">
-      An image can appear on left or an icon
-    </div>
-    <div class="description">
-      A description can appear on the right
-    </div>
-  </div>
-  <div class="actions">
-    <div class="ui button">Cancel</div>
-    <div class="ui button" v-on:click="$('.ui.modal').hide()">OK</div>
-  </div>
-</div>
     </div>
 </div>
 </template>
@@ -104,8 +86,7 @@ module.exports = {
             detailName: "",
             detailMemo: "",
             detailDeadLine: "",
-            listId: 1,
-            category_id: 0
+            listId: 1
         }
     },
     methods: {
@@ -120,7 +101,6 @@ module.exports = {
             this.detailName = task.name;
             this.detailMemo = task.memo;
             this.detailDeadLine = task.deadline;
-//            $('.ui.modal').modal();
         },
         taskComplete: function(id, e) {
             var _ = this;
@@ -161,7 +141,7 @@ module.exports = {
         },
         taskList: function (id, event) {
             var _ = this;
-            this.category_id = id;
+            this.listId= id;
             $("#categoryid").val(id);
             axios.get('/api/tasklists/' + id)
                 .then(function(response) {
@@ -195,45 +175,30 @@ module.exports = {
         },
         addTask: function(e) {
             var _ = this;
-            $.ajax({
-                type: 'post',
-                url: '/api/tasks/add',
-                data: {
-                    task: {
-                        name: _.newTask,
-                        list_id: _.category_id
-//                        list_id: $("#categoryid").val()
-                    }
-                },
-                headers: {
-                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
-                            'USER-ID': window.amy.user_id,
-                            'TOKEN': window.amy.token,
-                            'TOKEN-ID': window.amy.token_id,
-                }
-            }).done(function(data) {
+            let params = new URLSearchParams();
+            params.append('name', this.newTask);
+            params.append('list_id', this.listId);
+            axios.post('/api/tasks/add', params, {
+                headers: {'X-CSRF-TOKEN': window.Laravel.csrfToken}
+            }).then(function(response) {
                 _.tasks.push({
                     name: _.newTask,
-                    id: data.id
+                    id: response.id
                });
-               _.newTask = "";
-            }).fail(function() {
-               console.log('error');
             });
         },
         updateDetail: function(detail, event) {
-let params = new URLSearchParams();
-params.append('id', detail.id);
-params.append('name', this.detailName);
-params.append('memo', this.detailMemo);
-params.append('deadline', this.detailDeadLine);
-           console.log(params);
+            let params = new URLSearchParams();
+            params.append('id', detail.id);
+            params.append('name', this.detailName);
+            params.append('memo', this.detailMemo);
+            params.append('deadline', this.detailDeadLine);
+            console.log(params);
             axios.post('/api/tasks/update', params, {
                 headers: {'X-CSRF-TOKEN': window.Laravel.csrfToken}
-})
-                .then(function(response) {
-           console.log('ok');
-                });
+            }).then(function(response) {
+                console.log('ok');
+            });
         }
 
     }
