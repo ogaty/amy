@@ -4,7 +4,7 @@ php:
   - 7.1
 
 before_script:
-  - mysql -uroot -e "create database amytest"
+  - mysql -uroot -e "create database amy_testing"
   - composer install --no-interaction
   - php artisan migrate --force
   - php artisan db:seed --class=TestsSeeder --env=testing
