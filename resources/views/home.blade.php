@@ -3,9 +3,7 @@
 @section('content')
 <script>
         window.amy = {!! json_encode([
-            'token' => $token['token'],
-            'user_id' => $token['user_id'],
-            'token_id' => $token['id'],
+            'user_id' => $user['user_id']
         ]) !!};
 
         window.initList = {!! json_encode($categories); !!};

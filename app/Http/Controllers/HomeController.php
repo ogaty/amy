@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use \App\Eloquent\UsersToken;
 use App\Services\TasksService;
 use \App\Services\CategoriesService;
+use App\User;
 
 class HomeController extends Controller
 {
@@ -28,16 +29,8 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $token = new UsersToken();
-        $user = $token->where('user_id', Auth::id())->first();
-        if (is_null($user)) {
-            $random = Str::random();
-            $token->user_id = Auth::id();
-            $token->token = $random;
-            $token->save();
-        } else {
-            $random = $user->token;
-        }
+        $userModel = new User();
+        $user = $userModel->where('id', Auth::id())->first();
         $categoriesService = new CategoriesService();
         $categories = $categoriesService->getList();
         $tasksService = new TasksService();
@@ -45,11 +38,7 @@ class HomeController extends Controller
         $completedTasks = $tasksService->getCompletedList(1);
 
         return view('home', [
-            'token' => [
-                'id' => $user->id,
-                'token' => $user->token,
-                'user_id' => $user->user_id
-            ],
+            'user' => $user,
             'categories' => $categories,
             'tasks' => $tasks,
             'completed_tasks' => $completedTasks,

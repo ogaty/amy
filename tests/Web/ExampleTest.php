@@ -7,6 +7,8 @@ use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
+use App\User;
+
 class ExampleTest extends TestCaseWeb
 {
     public function setUp()
@@ -21,18 +23,12 @@ class ExampleTest extends TestCaseWeb
      */
     public function testBasicTest()
     {
-//        $response = $this->get('http://aaaabbb/');
-
-$curl = curl_init();
-
-curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($curl, CURLOPT_URL, 'http://dev-amy.ogatism.com');
-
-$response = curl_exec($curl);
-$error = curl_error($curl);
-
-curl_close($curl);
-
-        $this->assertEquals(false, $response);
+        $response = $this->get(route('amy.home'));
+        $this->assertEquals(302, $response->status());
+        $user = User::where('id', 1)->first();
+        $this->be($user);
+        $response = $this->get(route('amy.home'));
+        $this->assertEquals(200, $response->status());
+//        $this->assertViewHas(['INBOX']);
     }
 }

@@ -12,4 +12,8 @@ class CommentsService extends BaseService {
         $this->comments = new Comments();
 
     }
+
+    public function getLists() {
+        return $this->comments->all();
+    }
 }

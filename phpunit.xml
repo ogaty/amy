@@ -16,6 +16,10 @@
         <testsuite name="Unit Tests">
             <directory suffix="Test.php">./tests/Unit</directory>
         </testsuite>
+
+        <testsuite name="Web Tests">
+            <directory suffix="Test.php">./tests/Web</directory>
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
