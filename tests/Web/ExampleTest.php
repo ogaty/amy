@@ -25,9 +25,13 @@ class ExampleTest extends TestCaseWeb
     {
         $response = $this->get(route('amy.home'));
         $this->assertEquals(302, $response->status());
+        $response->assertSeeText('login');
+
         $user = User::where('id', 1)->first();
         $this->be($user);
         $response = $this->get(route('amy.home'));
+        $response->assertDontSeeText('Warning');
+        $response->assertSeeText('Logout');
         $this->assertEquals(200, $response->status());
 //        $this->assertViewHas(['INBOX']);
     }

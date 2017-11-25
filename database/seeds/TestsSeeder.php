@@ -19,7 +19,6 @@ class TestsSeeder extends Seeder
             'email' => $faker->email(),
             'password' => $faker->password(),
             'remember_token' => str_random(10),
-            'api_token' => str_random(10),
             'created_at' => '2017-05-01 10:00:00',
             'updated_at' => '2017-05-01 10:00:00',
         ]);
