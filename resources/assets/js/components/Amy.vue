@@ -10,13 +10,25 @@
             <form v-on:submit.prevent="addCategory" autocomplete="off">
                 <input type="text" class="add-category" name="add-category" v-model="newCategory" placeholder="add category">
             </form>
-            <div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <h3 id="category-modal-title"></h3>
-                    </div>
-                </div>
-            </div>
+<div id="categoryModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Modal Header</h4>
+      </div>
+      <div class="modal-body">
+        <p>Some text in the modal.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
         </div>
         <div class="task-wrap">
             <div class="task-wrap-left">

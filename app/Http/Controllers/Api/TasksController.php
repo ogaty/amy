@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use \App\Services\TasksService;
 
+use Illuminate\Support\Facades\Log;
+
 class TasksController extends \App\Http\Controllers\Controller
 {
     //
@@ -28,6 +30,8 @@ class TasksController extends \App\Http\Controllers\Controller
     }
 
     public function update() {
+        Log::debug($_POST);
+
         $data = [
             'id' => $_POST['id'],
             'name' => $_POST['name'],
@@ -39,7 +43,12 @@ class TasksController extends \App\Http\Controllers\Controller
     }
 
     public function complete() {
-        $data = $_POST['task'];
+        Log::debug($_POST);
+
+        $data = [
+             'id' => $_POST['task']['id'],
+             'completed' => $_POST['task']['completed'],
+        ];
         $tasks= new TasksService();
         return $tasks->updateTask($data);
     }

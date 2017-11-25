@@ -1,6 +1,192 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],2:[function(require,module,exports){
 module.exports = require('./lib/axios');
-},{"./lib/axios":3}],2:[function(require,module,exports){
+},{"./lib/axios":4}],3:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -180,8 +366,8 @@ module.exports = function xhrAdapter(config) {
   });
 };
 
-}).call(this,require("fsovz6"))
-},{"../core/createError":9,"./../core/settle":12,"./../helpers/btoa":16,"./../helpers/buildURL":17,"./../helpers/cookies":19,"./../helpers/isURLSameOrigin":21,"./../helpers/parseHeaders":23,"./../utils":25,"fsovz6":27}],3:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"../core/createError":10,"./../core/settle":13,"./../helpers/btoa":17,"./../helpers/buildURL":18,"./../helpers/cookies":20,"./../helpers/isURLSameOrigin":22,"./../helpers/parseHeaders":24,"./../utils":26,"_process":1}],4:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -235,7 +421,7 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./cancel/Cancel":4,"./cancel/CancelToken":5,"./cancel/isCancel":6,"./core/Axios":7,"./defaults":14,"./helpers/bind":15,"./helpers/spread":24,"./utils":25}],4:[function(require,module,exports){
+},{"./cancel/Cancel":5,"./cancel/CancelToken":6,"./cancel/isCancel":7,"./core/Axios":8,"./defaults":15,"./helpers/bind":16,"./helpers/spread":25,"./utils":26}],5:[function(require,module,exports){
 'use strict';
 
 /**
@@ -256,7 +442,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -315,14 +501,14 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":4}],6:[function(require,module,exports){
+},{"./Cancel":5}],7:[function(require,module,exports){
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 var defaults = require('./../defaults');
@@ -409,7 +595,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":14,"./../helpers/combineURLs":18,"./../helpers/isAbsoluteURL":20,"./../utils":25,"./InterceptorManager":8,"./dispatchRequest":10}],8:[function(require,module,exports){
+},{"./../defaults":15,"./../helpers/combineURLs":19,"./../helpers/isAbsoluteURL":21,"./../utils":26,"./InterceptorManager":9,"./dispatchRequest":11}],9:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -463,7 +649,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":25}],9:[function(require,module,exports){
+},{"./../utils":26}],10:[function(require,module,exports){
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -482,7 +668,7 @@ module.exports = function createError(message, config, code, response) {
   return enhanceError(error, config, code, response);
 };
 
-},{"./enhanceError":11}],10:[function(require,module,exports){
+},{"./enhanceError":12}],11:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -563,7 +749,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"../cancel/isCancel":6,"../defaults":14,"./../utils":25,"./transformData":13}],11:[function(require,module,exports){
+},{"../cancel/isCancel":7,"../defaults":15,"./../utils":26,"./transformData":14}],12:[function(require,module,exports){
 'use strict';
 
 /**
@@ -584,7 +770,7 @@ module.exports = function enhanceError(error, config, code, response) {
   return error;
 };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 var createError = require('./createError');
@@ -611,7 +797,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":9}],13:[function(require,module,exports){
+},{"./createError":10}],14:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -633,7 +819,7 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":25}],14:[function(require,module,exports){
+},{"./../utils":26}],15:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -729,8 +915,8 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-}).call(this,require("fsovz6"))
-},{"./adapters/http":2,"./adapters/xhr":2,"./helpers/normalizeHeaderName":22,"./utils":25,"fsovz6":27}],15:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"./adapters/http":3,"./adapters/xhr":3,"./helpers/normalizeHeaderName":23,"./utils":26,"_process":1}],16:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -743,7 +929,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -781,7 +967,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -851,7 +1037,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":25}],18:[function(require,module,exports){
+},{"./../utils":26}],19:[function(require,module,exports){
 'use strict';
 
 /**
@@ -865,7 +1051,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
   return baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '');
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -920,7 +1106,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":25}],20:[function(require,module,exports){
+},{"./../utils":26}],21:[function(require,module,exports){
 'use strict';
 
 /**
@@ -936,7 +1122,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1006,7 +1192,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":25}],22:[function(require,module,exports){
+},{"./../utils":26}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -1020,7 +1206,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":25}],23:[function(require,module,exports){
+},{"../utils":26}],24:[function(require,module,exports){
 'use strict';
 
 var utils = require('./../utils');
@@ -1059,7 +1245,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":25}],24:[function(require,module,exports){
+},{"./../utils":26}],25:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1088,7 +1274,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -1389,7 +1575,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":15}],26:[function(require,module,exports){
+},{"./helpers/bind":16}],27:[function(require,module,exports){
 /*!
  * Bootstrap v3.3.7 (http://getbootstrap.com)
  * Copyright 2011-2016 Twitter, Inc.
@@ -3767,71 +3953,6 @@ if (typeof jQuery === 'undefined') {
   })
 
 }(jQuery);
-
-},{}],27:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-}
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
 
 },{}],28:[function(require,module,exports){
 /*!
@@ -31175,7 +31296,7 @@ return jQuery;
   }
 }.call(this));
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],30:[function(require,module,exports){
 var Vue // late bind
 var version
@@ -42021,8 +42142,46 @@ Vue$3.compile = compileToFunctions;
 
 module.exports = Vue$3;
 
-}).call(this,require("fsovz6"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"fsovz6":27}],32:[function(require,module,exports){
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"_process":1}],32:[function(require,module,exports){
+
+/**
+ * First we will load all of this project's JavaScript dependencies which
+ * includes Vue and other libraries. It is a great starting point when
+ * building robust, powerful web applications using Vue and Laravel.
+ */
+
+require('./bootstrap');
+//import VueRouter from 'vue-router'
+//import router from './router'
+var Vue = require('vue');
+//import Vue from 'vue'
+
+Vue.debug = true;
+//Vue.use(VueRouter)
+Vue.config.debug = true;
+//Vue.component('templateCategories', require('./components/Categoriesa.vue'));
+//Vue.component('templatetasks', require('./components/Tasks.vue'));
+
+//from templateCategories import './components/Categoriesa.vue';
+//import templatecategories from './components/Categoriesa';
+//import templatecategories from './components/Categories';
+//import templatetasks from './components/Tasks';
+//import templatedetail from './components/Detail';
+//import templateamy from './components/Amy';
+var templateamy = require('./components/Amy.vue');
+
+window.listId = 0;
+
+window.main = new Vue({
+    el: '#body',
+    components: {
+        templateamy
+    },
+    data: {}
+});
+
+},{"./bootstrap":33,"./components/Amy.vue":34,"vue":31}],33:[function(require,module,exports){
 
 window._ = require('lodash');
 
@@ -42033,9 +42192,9 @@ window._ = require('lodash');
  */
 
 try {
-    window.$ = window.jQuery = require('jquery');
+  window.$ = window.jQuery = require('jquery');
 
-    require('bootstrap-sass');
+  require('bootstrap-sass');
 } catch (e) {}
 
 /**
@@ -42064,7 +42223,7 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 //     key: 'your-pusher-key'
 // });
 
-},{"axios":1,"bootstrap-sass":26,"jquery":28,"lodash":29}],33:[function(require,module,exports){
+},{"axios":2,"bootstrap-sass":27,"jquery":28,"lodash":29}],34:[function(require,module,exports){
 ;(function(){
 'use strict';
 
@@ -42206,7 +42365,7 @@ if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
 __vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"wrap"},[_c('div',{staticClass:"left-box"},[_c('ul',{staticClass:"category-list"},_vm._l((_vm.categories),function(list){return _c('li',{staticClass:"category-list--each",attrs:{"data-id":list.id},on:{"click":function($event){_vm.taskList(list.id, list.name, $event)}}},[_c('span',{staticClass:"title"},[_vm._v(_vm._s(list.name))]),_vm._v(" "),_c('span',{staticClass:"menu",on:{"click":_vm.categoryMenu}},[_c('i',{staticClass:"fa fa-pencil",attrs:{"aria-hidden":"true"}})])])})),_vm._v(" "),_c('form',{attrs:{"autocomplete":"off"},on:{"submit":function($event){$event.preventDefault();_vm.addCategory($event)}}},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.newCategory),expression:"newCategory"}],staticClass:"add-category",attrs:{"type":"text","name":"add-category","placeholder":"add category"},domProps:{"value":(_vm.newCategory)},on:{"input":function($event){if($event.target.composing){ return; }_vm.newCategory=$event.target.value}}})]),_vm._v(" "),_vm._m(0)]),_vm._v(" "),_c('div',{staticClass:"task-wrap"},[_c('div',{staticClass:"task-wrap-left"},[_c('h2',{staticClass:"task-wrap-left--head"},[_vm._v(_vm._s(_vm.centerCategoryname))]),_vm._v(" "),_c('form',{attrs:{"autocomplete":"off"},on:{"submit":function($event){$event.preventDefault();_vm.addTask($event)}}},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.newTask),expression:"newTask"}],staticClass:"task-wrap-left--add-task",attrs:{"type":"text","name":"add-task","placeholder":"add task"},domProps:{"value":(_vm.newTask)},on:{"input":function($event){if($event.target.composing){ return; }_vm.newTask=$event.target.value}}}),_vm._v(" "),_c('input',{attrs:{"type":"hidden","id":"categoryid","value":"1"}})]),_vm._v(" "),_c('div',{staticClass:"ui middle aligned divided list task-list"},_vm._l((_vm.tasks),function(task){return _c('div',{staticClass:"task-list--each item",attrs:{"data-id":task.id}},[_c('div',{staticClass:"right floated content",on:{"click":function($event){_vm.taskDetail(task, $event)}}},[_c('i',{staticClass:"pencil icon",attrs:{"aria-hidden":"true"}})]),_vm._v(" "),_c('div',{staticClass:"content"},[_c('div',{staticClass:"ui checkbox"},[_c('input',{attrs:{"type":"checkbox"},on:{"click":function($event){_vm.taskComplete(task.id, $event)}}}),_vm._v(" "),_c('label',[_vm._v(_vm._s(task.name))])])])])})),_vm._v(" "),_c('h2',{staticClass:"completed-tasks--head"},[_vm._v("完了タスク")]),_vm._v(" "),_c('div',{staticClass:"ui middle aligned divided list task-list"},_vm._l((_vm.completedtasks),function(task){return _c('div',{staticClass:"completed-task-list--each",attrs:{"data-id":task.id}},[_c('div',{staticClass:"content"},[_c('div',{staticClass:"ui checkbox"},[_c('input',{attrs:{"type":"checkbox","checked":""},on:{"click":function($event){}}}),_vm._v(" "),_c('label',[_vm._v(_vm._s(task.name))])])])])}))]),_vm._v(" "),(_vm.displayDetail)?_c('div',{staticClass:"task-wrap-right"},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.detailName),expression:"detailName"}],attrs:{"type":"text"},domProps:{"value":_vm.detail.name,"value":(_vm.detailName)},on:{"input":function($event){if($event.target.composing){ return; }_vm.detailName=$event.target.value}}}),_vm._v(" "),_c('h3',[_vm._v("期限")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.detailDeadLine),expression:"detailDeadLine"}],attrs:{"type":"date"},domProps:{"value":_vm.detail.deadline,"value":(_vm.detailDeadLine)},on:{"input":function($event){if($event.target.composing){ return; }_vm.detailDeadLine=$event.target.value}}}),_vm._v(" "),_c('div',{staticClass:"task-detail-memo"},[_c('h3',[_vm._v("memo")]),_vm._v(" "),_c('textarea',{directives:[{name:"model",rawName:"v-model",value:(_vm.detailMemo),expression:"detailMemo"}],domProps:{"value":_vm.detail.memo,"value":(_vm.detailMemo)},on:{"input":function($event){if($event.target.composing){ return; }_vm.detailMemo=$event.target.value}}})]),_vm._v(" "),_c('button',{on:{"click":function($event){_vm.updateDetail(_vm.detail, $event)}}},[_vm._v("保存")])]):_vm._e()])])}
-__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"modal fade",attrs:{"id":"categoryModal","tabindex":"-1","role":"dialog","aria-labelledby":"myLargeModalLabel","aria-hidden":"true"}},[_c('div',{staticClass:"modal-dialog modal-lg"},[_c('div',{staticClass:"modal-content"},[_c('h3',{attrs:{"id":"category-modal-title"}})])])])}]
+__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"modal fade",attrs:{"id":"categoryModal","role":"dialog"}},[_c('div',{staticClass:"modal-dialog"},[_c('div',{staticClass:"modal-content"},[_c('div',{staticClass:"modal-header"},[_c('button',{staticClass:"close",attrs:{"type":"button","data-dismiss":"modal"}},[_vm._v("×")]),_vm._v(" "),_c('h4',{staticClass:"modal-title"},[_vm._v("Modal Header")])]),_vm._v(" "),_c('div',{staticClass:"modal-body"},[_c('p',[_vm._v("Some text in the modal.")])]),_vm._v(" "),_c('div',{staticClass:"modal-footer"},[_c('button',{staticClass:"btn btn-default",attrs:{"type":"button","data-dismiss":"modal"}},[_vm._v("Close")])])])])])}]
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
@@ -42217,44 +42376,4 @@ if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
     hotAPI.reload("data-v-7f68c9da", __vue__options__)
   }
 })()}
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkFteS52dWU/NjAzNGE1N2MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7O0FBcUVBO0FBQ0E7QUFNQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBWkE7QUFjQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFGQTtBQURBO0FBTUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUpBO0FBVEE7QUFnQkE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBSkE7QUFOQTtBQWFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTs7QUFoSEE7QUF2QkE7Ozs7O0FBckVBO0FBQUEiLCJzb3VyY2VzQ29udGVudCI6WyI8dGVtcGxhdGU+XG4gICAgPGRpdiBjbGFzcz1cIndyYXBcIj5cbiAgICAgICAgPGRpdiBjbGFzcz1cImxlZnQtYm94XCI+XG4gICAgICAgICAgICA8dWwgY2xhc3M9XCJjYXRlZ29yeS1saXN0XCI+XG4gICAgICAgICAgICAgICAgPGxpIGNsYXNzPVwiY2F0ZWdvcnktbGlzdC0tZWFjaFwiIHYtb246Y2xpY2s9XCJ0YXNrTGlzdChsaXN0LmlkLCBsaXN0Lm5hbWUsICRldmVudClcIiB2LWZvcj1cImxpc3QgaW4gY2F0ZWdvcmllc1wiIHYtYmluZDpkYXRhLWlkPVwibGlzdC5pZFwiPlxuICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzcz1cInRpdGxlXCI+e3sgbGlzdC5uYW1lIH19PC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzcz1cIm1lbnVcIiB2LW9uOmNsaWNrPVwiY2F0ZWdvcnlNZW51XCI+PGkgY2xhc3M9XCJmYSBmYS1wZW5jaWxcIiBhcmlhLWhpZGRlbj1cInRydWVcIj48L2k+PC9zcGFuPlxuICAgICAgICAgICAgICAgIDwvbGk+XG4gICAgICAgICAgICA8L3VsPlxuICAgICAgICAgICAgPGZvcm0gdi1vbjpzdWJtaXQucHJldmVudD1cImFkZENhdGVnb3J5XCIgYXV0b2NvbXBsZXRlPVwib2ZmXCI+XG4gICAgICAgICAgICAgICAgPGlucHV0IHR5cGU9XCJ0ZXh0XCIgY2xhc3M9XCJhZGQtY2F0ZWdvcnlcIiBuYW1lPVwiYWRkLWNhdGVnb3J5XCIgdi1tb2RlbD1cIm5ld0NhdGVnb3J5XCIgcGxhY2Vob2xkZXI9XCJhZGQgY2F0ZWdvcnlcIj5cbiAgICAgICAgICAgIDwvZm9ybT5cbiAgICAgICAgICAgIDxkaXYgY2xhc3M9XCJtb2RhbCBmYWRlXCIgaWQ9XCJjYXRlZ29yeU1vZGFsXCIgdGFiaW5kZXg9XCItMVwiIHJvbGU9XCJkaWFsb2dcIiBhcmlhLWxhYmVsbGVkYnk9XCJteUxhcmdlTW9kYWxMYWJlbFwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPlxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9XCJtb2RhbC1kaWFsb2cgbW9kYWwtbGdcIj5cbiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz1cIm1vZGFsLWNvbnRlbnRcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxoMyBpZD1cImNhdGVnb3J5LW1vZGFsLXRpdGxlXCI+PC9oMz5cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgPC9kaXY+XG4gICAgICAgIDxkaXYgY2xhc3M9XCJ0YXNrLXdyYXBcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3M9XCJ0YXNrLXdyYXAtbGVmdFwiPlxuICAgICAgICAgICAgICAgIDxoMiBjbGFzcz1cInRhc2std3JhcC1sZWZ0LS1oZWFkXCI+e3sgY2VudGVyQ2F0ZWdvcnluYW1lIH19PC9oMj5cbiAgICAgICAgICAgICAgICA8Zm9ybSB2LW9uOnN1Ym1pdC5wcmV2ZW50PVwiYWRkVGFza1wiIGF1dG9jb21wbGV0ZT1cIm9mZlwiPlxuICAgICAgICAgICAgICAgICAgICA8aW5wdXQgdHlwZT1cInRleHRcIiBjbGFzcz1cInRhc2std3JhcC1sZWZ0LS1hZGQtdGFza1wiIG5hbWU9XCJhZGQtdGFza1wiIHYtbW9kZWw9XCJuZXdUYXNrXCIgcGxhY2Vob2xkZXI9XCJhZGQgdGFza1wiPlxuICAgICAgICAgICAgICAgICAgICA8aW5wdXQgdHlwZT1cImhpZGRlblwiIGlkPVwiY2F0ZWdvcnlpZFwiIHZhbHVlPVwiMVwiPlxuICAgICAgICAgICAgICAgIDwvZm9ybT5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPVwidWkgbWlkZGxlIGFsaWduZWQgZGl2aWRlZCBsaXN0IHRhc2stbGlzdFwiPlxuICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPVwidGFzay1saXN0LS1lYWNoIGl0ZW1cIiB2LWZvcj1cInRhc2sgaW4gdGFza3NcIiB2LWJpbmQ6ZGF0YS1pZD1cInRhc2suaWRcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgdi1vbjpjbGljaz1cInRhc2tEZXRhaWwodGFzaywgJGV2ZW50KVwiIGNsYXNzPVwicmlnaHQgZmxvYXRlZCBjb250ZW50XCI+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPGkgY2xhc3M9XCJwZW5jaWwgaWNvblwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPjwvaT5cbiAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz1cImNvbnRlbnRcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPVwidWkgY2hlY2tib3hcIj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPGlucHV0IHR5cGU9XCJjaGVja2JveFwiIHYtb246Y2xpY2s9XCJ0YXNrQ29tcGxldGUodGFzay5pZCwgJGV2ZW50KVwiPlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8bGFiZWw+e3sgdGFzay5uYW1lIH19PC9sYWJlbD5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8aDIgY2xhc3M9XCJjb21wbGV0ZWQtdGFza3MtLWhlYWRcIj7lrozkuobjgr/jgrnjgq88L2gyPlxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9XCJ1aSBtaWRkbGUgYWxpZ25lZCBkaXZpZGVkIGxpc3QgdGFzay1saXN0XCI+XG4gICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9XCJjb21wbGV0ZWQtdGFzay1saXN0LS1lYWNoXCIgdi1mb3I9XCJ0YXNrIGluIGNvbXBsZXRlZHRhc2tzXCIgdi1iaW5kOmRhdGEtaWQ9XCJ0YXNrLmlkXCI+XG4gICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPVwiY29udGVudFwiPlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9XCJ1aSBjaGVja2JveFwiPlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8aW5wdXQgdHlwZT1cImNoZWNrYm94XCIgdi1vbjpjbGljaz1cIlwiIGNoZWNrZWQ+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxsYWJlbD57eyB0YXNrLm5hbWUgfX08L2xhYmVsPlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzPVwidGFzay13cmFwLXJpZ2h0XCIgdi1pZj1cImRpc3BsYXlEZXRhaWxcIj5cbiAgICAgICAgICAgICAgICA8aW5wdXQgdHlwZT1cInRleHRcIiB2LWJpbmQ6dmFsdWU9XCJkZXRhaWwubmFtZVwiIHYtbW9kZWw9XCJkZXRhaWxOYW1lXCI+XG4gICAgICAgICAgICAgICAgPGgzPuacn+mZkDwvaDM+XG4gICAgICAgICAgICAgICAgPGlucHV0IHR5cGU9XCJkYXRlXCIgdi1iaW5kOnZhbHVlPVwiZGV0YWlsLmRlYWRsaW5lXCIgdi1tb2RlbD1cImRldGFpbERlYWRMaW5lXCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzcz1cInRhc2stZGV0YWlsLW1lbW9cIj5cbiAgICAgICAgICAgICAgICAgICAgPGgzPm1lbW88L2gzPlxuICAgICAgICAgICAgICAgICAgICA8dGV4dGFyZWEgdi1iaW5kOnZhbHVlPVwiZGV0YWlsLm1lbW9cIiB2LW1vZGVsPVwiZGV0YWlsTWVtb1wiPlxuICAgICAgICAgICAgICAgICAgICA8L3RleHRhcmVhPlxuICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgIDxidXR0b24gdi1vbjpjbGljaz1cInVwZGF0ZURldGFpbChkZXRhaWwsICRldmVudClcIj7kv53lrZg8L2J1dHRvbj5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICA8L2Rpdj5cbiAgICA8L2Rpdj5cbjwvZGl2PlxuPC90ZW1wbGF0ZT5cblxuPHNjcmlwdD5cbm1vZHVsZS5leHBvcnRzID0ge1xuICAgIHByb3BzOiBbXG4gICAgICAgICdjYXRlZ29yeW5hbWUnLFxuICAgICAgICAnY2F0ZWdvcnlpZCcsXG4gICAgICAgICd0YXNrbmFtZScsXG4gICAgICAgICd0YXNraWQnXG4gICAgXSxcbiAgICBkYXRhOiBmdW5jdGlvbigpIHtcbiAgICAgICAgcmV0dXJuIHtcbiAgICAgICAgICAgIHRhc2tzOiB3aW5kb3cuaW5pdFRhc2ssXG4gICAgICAgICAgICBjb21wbGV0ZWR0YXNrczogd2luZG93LmluaXRDb21wbGV0ZWRUYXNrLFxuICAgICAgICAgICAgY2F0ZWdvcmllczogd2luZG93LmluaXRMaXN0LFxuICAgICAgICAgICAgZGV0YWlsOiB3aW5kb3cuaW5pdERldGFpbCxcbiAgICAgICAgICAgIGNlbnRlckNhdGVnb3J5bmFtZTogXCJJTkJPWFwiLFxuICAgICAgICAgICAgbmV3Q2F0ZWdvcnk6IFwiXCIsXG4gICAgICAgICAgICBuZXdUYXNrOiBcIlwiLFxuICAgICAgICAgICAgZGV0YWlsTmFtZTogXCJcIixcbiAgICAgICAgICAgIGRldGFpbE1lbW86IFwiXCIsXG4gICAgICAgICAgICBkZXRhaWxEZWFkTGluZTogXCJcIixcbiAgICAgICAgICAgIGxpc3RJZDogMSxcbiAgICAgICAgICAgIGRpc3BsYXlEZXRhaWw6IGZhbHNlLFxuICAgICAgICB9XG4gICAgfSxcbiAgICBtZXRob2RzOiB7XG4gICAgICAgIHRhc2tEZXRhaWw6IGZ1bmN0aW9uKHRhc2ssIGUpIHtcbiAgICAgICAgICAgIGNvbnNvbGUubG9nKCd0YXNrRGV0YWlsJyk7XG4gICAgICAgICAgICBjb25zb2xlLmxvZyh0YXNrLm5hbWUpO1xuICAgICAgICAgICAgZS5zdG9wUHJvcGFnYXRpb24oKTtcbiAgICAgICAgICAgIHRoaXMuZGV0YWlsLm5hbWUgPSB0YXNrLm5hbWU7XG4gICAgICAgICAgICB0aGlzLmRldGFpbC5tZW1vID0gdGFzay5tZW1vO1xuICAgICAgICAgICAgdGhpcy5kZXRhaWwuaWQgPSB0YXNrLmlkO1xuICAgICAgICAgICAgdGhpcy5kZXRhaWwuZGVhZGxpbmUgPSB0YXNrLmRlYWRsaW5lO1xuICAgICAgICAgICAgdGhpcy5kZXRhaWxOYW1lID0gdGFzay5uYW1lO1xuICAgICAgICAgICAgdGhpcy5kZXRhaWxNZW1vID0gdGFzay5tZW1vO1xuICAgICAgICAgICAgdGhpcy5kZXRhaWxEZWFkTGluZSA9IHRhc2suZGVhZGxpbmU7XG4gICAgICAgICAgICB0aGlzLmRpc3BsYXlEZXRhaWwgPSB0cnVlO1xuICAgICAgICB9LFxuICAgICAgICB0YXNrQ29tcGxldGU6IGZ1bmN0aW9uKGlkLCBlKSB7XG4gICAgICAgICAgICB2YXIgXyA9IHRoaXM7XG4gICAgICAgICAgICAkLmFqYXgoe1xuICAgICAgICAgICAgICAgIHR5cGU6ICdwb3N0JyxcbiAgICAgICAgICAgICAgICB1cmw6ICcvYXBpL3Rhc2tzL2NvbXBsZXRlJyxcbiAgICAgICAgICAgICAgICBkYXRhOiB7XG4gICAgICAgICAgICAgICAgICAgIHRhc2s6IHtcbiAgICAgICAgICAgICAgICAgICAgICAgIGlkOiBpZCxcbiAgICAgICAgICAgICAgICAgICAgICAgIGNvbXBsZXRlZDogMVxuICAgICAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgICAgICBoZWFkZXJzOiB7XG4gICAgICAgICAgICAgICAgICAgICdYLUNTUkYtVE9LRU4nOiB3aW5kb3cuTGFyYXZlbC5jc3JmVG9rZW4sXG4gICAgICAgICAgICAgICAgICAgICdVU0VSLUlEJzogd2luZG93LmFteS51c2VyX2lkLFxuICAgICAgICAgICAgICAgICAgICAnVE9LRU4nOiB3aW5kb3cuYW15LnRva2VuLFxuICAgICAgICAgICAgICAgICAgICAnVE9LRU4tSUQnOiB3aW5kb3cuYW15LnRva2VuX2lkLFxuICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgIH0pLmRvbmUoZnVuY3Rpb24gKHJldCkge1xuICAgICAgICAgICAgICAgIGNvbnNvbGUubG9nKCdzdWNjZXNzJyk7XG4gICAgICAgICAgICAgICAgY29uc29sZS5sb2coJChyZXQpKTtcbiAgICAgICAgICAgICAgICB2YXIgaW5kZXggPSAwO1xuICAgICAgICAgICAgICAgIGZvciAodmFyIGkgPSAwOyBpIDwgXy50YXNrcy5sZW5ndGg7IGkrKykge1xuICAgICAgICAgICAgICAgICAgICBpZiAoXy50YXNrc1tpXS5pZCA9PSByZXQuaWQpIHtcbiAgICAgICAgICAgICAgICAgICAgICAgIGNvbnNvbGUubG9nKGkpO1xuICAgICAgICAgICAgICAgICAgICAgICAgaW5kZXggPSBpO1xuICAgICAgICAgICAgICAgICAgICAgICAgYnJlYWs7XG4gICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgXy5jb21wbGV0ZWR0YXNrcy5wdXNoKHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIG5hbWU6Xy50YXNrc1tpbmRleF0ubmFtZSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIGlkOl8udGFza3NbaW5kZXhdLmlkXG4gICAgICAgICAgICAgICAgICAgICAgICAgIH0pO1xuICAgICAgICAgICAgICAgIF8udGFza3Muc3BsaWNlKGluZGV4LCAxKTtcbiAgICAgICAgICAgIH0pLmZhaWwoZnVuY3Rpb24gKCkge1xuICAgICAgICAgICAgICAgIGNvbnNvbGUubG9nKCdlcnJvcicpO1xuICAgICAgICAgICAgfSk7XG4gICAgICAgIH0sXG4gICAgICAgIHRhc2tMaXN0OiBmdW5jdGlvbiAoaWQsIG5hbWUsIGV2ZW50KSB7XG4gICAgICAgICAgICB2YXIgXyA9IHRoaXM7XG4gICAgICAgICAgICB0aGlzLmxpc3RJZD0gaWQ7XG4gICAgICAgICAgICB0aGlzLmNlbnRlckNhdGVnb3J5bmFtZSA9IG5hbWU7XG4gICAgICAgICAgICAkKFwiI2NhdGVnb3J5aWRcIikudmFsKGlkKTtcbiAgICAgICAgICAgIGF4aW9zLmdldCgnL2FwaS90YXNrbGlzdHMvJyArIGlkKVxuICAgICAgICAgICAgICAgIC50aGVuKGZ1bmN0aW9uKHJlc3BvbnNlKSB7XG4gICAgICAgICAgICAgICAgICAgIF8udGFza3MgPSByZXNwb25zZS5kYXRhO1xuICAgICAgICAgICAgICAgIH0pO1xuICAgICAgICB9LFxuICAgICAgICBjYXRlZ29yeU1lbnU6IGZ1bmN0aW9uKGUpIHtcbiAgICAgICAgICAgICAgICAgICAgJCgnI2NhdGVnb3J5LW1vZGFsLXRpdGxlJykudGV4dCgkKGUuY3VycmVudFRhcmdldCkucGFyZW50KCkuZmluZCgnLnRpdGxlJykudGV4dCgpKTtcbiAgICAgICAgICAgICAgICAgICAgJCgnI2NhdGVnb3J5TW9kYWwnKS5tb2RhbCgpO1xuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgIGFkZENhdGVnb3J5OiBmdW5jdGlvbihlKSB7XG4gICAgICAgICAgICB2YXIgXyA9IHRoaXM7XG4gICAgICAgICAgICAkLmFqYXgoe1xuICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogJ3Bvc3QnLFxuICAgICAgICAgICAgICAgICAgICAgICAgdXJsOiAnL2FwaS9jYXRlZ29yaWVzL2FkZCcsXG4gICAgICAgICAgICAgICAgICAgICAgICBkYXRhOiB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgbmFtZTogdGhpcy5uZXdDYXRlZ29yeVxuICAgICAgICAgICAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgICAgICAgICAgICAgIGhlYWRlcnM6IHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAnWC1DU1JGLVRPS0VOJzogd2luZG93LkxhcmF2ZWwuY3NyZlRva2VuLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICdVU0VSLUlEJzogd2luZG93LmFteS51c2VyX2lkLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICdUT0tFTic6IHdpbmRvdy5hbXkudG9rZW4sXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgJ1RPS0VOLUlEJzogd2luZG93LmFteS50b2tlbl9pZCxcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgfSkuZG9uZShmdW5jdGlvbihkYXRhKSB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgIF8uY2F0ZWdvcmllcy5wdXNoKHtuYW1lOl8ubmV3Q2F0ZWdvcnl9KTtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgXy5uZXdDYXRlZ29yeSA9IFwiXCI7XG4gICAgICAgICAgICAgICAgICAgIH0pLmZhaWwoZnVuY3Rpb24oKSB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnNvbGUubG9nKCdlcnJvcicpO1xuICAgICAgICAgICAgICAgICAgICB9KTtcbiAgICAgICAgfSxcbiAgICAgICAgYWRkVGFzazogZnVuY3Rpb24oZSkge1xuICAgICAgICAgICAgdmFyIF8gPSB0aGlzO1xuICAgICAgICAgICAgbGV0IHBhcmFtcyA9IG5ldyBVUkxTZWFyY2hQYXJhbXMoKTtcbiAgICAgICAgICAgIHBhcmFtcy5hcHBlbmQoJ25hbWUnLCB0aGlzLm5ld1Rhc2spO1xuICAgICAgICAgICAgcGFyYW1zLmFwcGVuZCgnbGlzdF9pZCcsIHRoaXMubGlzdElkKTtcbiAgICAgICAgICAgIGF4aW9zLnBvc3QoJy9hcGkvdGFza3MvYWRkJywgcGFyYW1zLCB7XG4gICAgICAgICAgICAgICAgaGVhZGVyczogeydYLUNTUkYtVE9LRU4nOiB3aW5kb3cuTGFyYXZlbC5jc3JmVG9rZW59XG4gICAgICAgICAgICB9KS50aGVuKGZ1bmN0aW9uKHJlc3BvbnNlKSB7XG4gICAgICAgICAgICAgICAgXy50YXNrcy5wdXNoKHtcbiAgICAgICAgICAgICAgICAgICAgbmFtZTogXy5uZXdUYXNrLFxuICAgICAgICAgICAgICAgICAgICBpZDogcmVzcG9uc2UuaWRcbiAgICAgICAgICAgICAgIH0pO1xuICAgICAgICAgICAgfSk7XG4gICAgICAgIH0sXG4gICAgICAgIHVwZGF0ZURldGFpbDogZnVuY3Rpb24oZGV0YWlsLCBldmVudCkge1xuICAgICAgICAgICAgbGV0IHBhcmFtcyA9IG5ldyBVUkxTZWFyY2hQYXJhbXMoKTtcbiAgICAgICAgICAgIHBhcmFtcy5hcHBlbmQoJ2lkJywgZGV0YWlsLmlkKTtcbiAgICAgICAgICAgIHBhcmFtcy5hcHBlbmQoJ25hbWUnLCB0aGlzLmRldGFpbE5hbWUpO1xuICAgICAgICAgICAgcGFyYW1zLmFwcGVuZCgnbWVtbycsIHRoaXMuZGV0YWlsTWVtbyk7XG4gICAgICAgICAgICBwYXJhbXMuYXBwZW5kKCdkZWFkbGluZScsIHRoaXMuZGV0YWlsRGVhZExpbmUpO1xuICAgICAgICAgICAgY29uc29sZS5sb2cocGFyYW1zKTtcbiAgICAgICAgICAgIGF4aW9zLnBvc3QoJy9hcGkvdGFza3MvdXBkYXRlJywgcGFyYW1zLCB7XG4gICAgICAgICAgICAgICAgaGVhZGVyczogeydYLUNTUkYtVE9LRU4nOiB3aW5kb3cuTGFyYXZlbC5jc3JmVG9rZW59XG4gICAgICAgICAgICB9KS50aGVuKGZ1bmN0aW9uKHJlc3BvbnNlKSB7XG4gICAgICAgICAgICAgICAgY29uc29sZS5sb2coJ29rJyk7XG4gICAgICAgICAgICB9KTtcbiAgICAgICAgfVxuXG4gICAgfVxufVxuPC9zY3JpcHQ+XG5cbiJdfQ==
-},{"vue":31,"vue-hot-reload-api":30}],34:[function(require,module,exports){
-
-/**
- * First we will load all of this project's JavaScript dependencies which
- * includes Vue and other libraries. It is a great starting point when
- * building robust, powerful web applications using Vue and Laravel.
- */
-
-require('./bootstrap');
-//import VueRouter from 'vue-router'
-//import router from './router'
-var Vue = require('vue');
-//import Vue from 'vue'
-
-Vue.debug = true;
-//Vue.use(VueRouter)
-Vue.config.debug = true;
-//Vue.component('templateCategories', require('./components/Categoriesa.vue'));
-//Vue.component('templatetasks', require('./components/Tasks.vue'));
-
-//from templateCategories import './components/Categoriesa.vue';
-//import templatecategories from './components/Categoriesa';
-//import templatecategories from './components/Categories';
-//import templatetasks from './components/Tasks';
-//import templatedetail from './components/Detail';
-//import templateamy from './components/Amy';
-var templateamy = require('./components/Amy.vue');
-
-window.listId = 0;
-
-window.main = new Vue({
-    el: '#body',
-    components: {
-        templateamy
-    },
-    data: {
-    }
-});
-
-},{"./bootstrap":32,"./components/Amy.vue":33,"vue":31}]},{},[34])
+},{"vue":31,"vue-hot-reload-api":30}]},{},[32]);
