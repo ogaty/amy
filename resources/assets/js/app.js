@@ -35,3 +35,26 @@ window.main = new Vue({
     data: {
     }
 });
+
+function handleDragStart(e) {
+}
+window.handleDragOver = function(e) {
+e.preventDefault();
+}
+function handleDragEnter(e) {
+}
+function handleDragLeave(e) {
+}
+window.handleDrop = function(e) {
+console.log("dropped");
+}
+function handleDragEnd(e) {
+}
+function addDnDHandlers(elem) {
+  elem.addEventListener('dragstart', handleDragStart, false);
+  elem.addEventListener('dragenter', handleDragEnter, false)
+  elem.addEventListener('dragover', handleDragOver, false);
+  elem.addEventListener('dragleave', handleDragLeave, false);
+  elem.addEventListener('drop', handleDrop, false);
+  elem.addEventListener('dragend', handleDragEnd, false);
+}

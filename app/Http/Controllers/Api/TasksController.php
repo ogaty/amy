@@ -20,34 +20,33 @@ class TasksController extends \App\Http\Controllers\Controller
         return $tasks->getList($id);
     }
 
-    public function add() {
+    public function add(Request $request) {
         $data = [
-            'name' => $_POST['name'],
-            'list_id' => $_POST['list_id'],
+            'name' => $request->input('name'),
+            'list_id' => $request->input('list_id'),
         ];
         $tasks= new TasksService();
         return $tasks->addTask($data);
     }
 
-    public function update() {
-        Log::debug($_POST);
+    public function update(Request $request) {
+//        Log::debug($_POST);
 
         $data = [
-            'id' => $_POST['id'],
-            'name' => $_POST['name'],
-            'memo' => $_POST['memo'],
-            'deadline' => $_POST['deadline'],
+            'id' => $request->input('id'),
+            'name' => $request->input('name'),
+            'memo' => $request->input('memo'),
+            'deadline' => $request->input('deadline'),
         ];
         $tasks= new TasksService();
         return $tasks->updateTask($data);
     }
 
-    public function complete() {
-        Log::debug($_POST);
+    public function complete(Request $request) {
 
         $data = [
-             'id' => $_POST['task']['id'],
-             'completed' => $_POST['task']['completed'],
+             'id' => $request->input('task.id'),
+             'completed' => $request->input('task.completed'),
         ];
         $tasks= new TasksService();
         return $tasks->updateTask($data);

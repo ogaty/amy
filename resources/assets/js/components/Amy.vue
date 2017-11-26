@@ -2,7 +2,7 @@
     <div class="wrap">
         <div class="left-box">
             <ul class="category-list">
-                <li class="category-list--each" v-on:click="taskList(list.id, list.name, $event)" v-for="list in categories" v-bind:data-id="list.id">
+                <li class="category-list--each" draggable="true" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" v-on:click="taskList(list.id, list.name, $event)" v-for="list in categories" v-bind:data-id="list.id">
                     <span class="title">{{ list.name }}</span>
                     <span class="menu" v-on:click="categoryMenu"><i class="fa fa-pencil" aria-hidden="true"></i></span>
                 </li>
@@ -10,25 +10,25 @@
             <form v-on:submit.prevent="addCategory" autocomplete="off">
                 <input type="text" class="add-category" name="add-category" v-model="newCategory" placeholder="add category">
             </form>
-<div id="categoryModal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
+            <div id="categoryModal" class="modal fade" role="dialog">
+                <div class="modal-dialog">
 
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Modal Header</h4>
-      </div>
-      <div class="modal-body">
-        <p>Some text in the modal.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
+                    <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Modal Header</h4>
+                    </div>
+                    <div class="modal-body">
+                       <p>Some text in the modal.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
 
-  </div>
-</div>
+               </div>
+            </div>
         </div>
         <div class="task-wrap">
             <div class="task-wrap-left">
@@ -39,13 +39,11 @@
                 </form>
                 <div class="ui middle aligned divided list task-list">
                     <div class="task-list--each item" v-for="task in tasks" v-bind:data-id="task.id">
-                        <div v-on:click="taskDetail(task, $event)" class="right floated content">
-                            <i class="pencil icon" aria-hidden="true"></i>
-                        </div>
-                        <div class="content">
+                        <div class="content" draggable="true">
                             <div class="ui checkbox">
                                 <input type="checkbox" v-on:click="taskComplete(task.id, $event)">
                                 <label>{{ task.name }}</label>
+                                <i class="fa fa-pencil" aria-hidden="true" v-on:click="taskDetail(task, $event)"></i>
                             </div>
                         </div>
                     </div>
@@ -209,10 +207,19 @@ module.exports = {
             params.append('memo', this.detailMemo);
             params.append('deadline', this.detailDeadLine);
             console.log(params);
+            let self = this;
             axios.post('/api/tasks/update', params, {
                 headers: {'X-CSRF-TOKEN': window.Laravel.csrfToken}
             }).then(function(response) {
                 console.log('ok');
+                for (var i = 0; i < self.tasks.length; i++) {
+                    if (self.tasks[i].id = detail.id) {
+                        self.tasks[i].name = self.detailName;
+                    }
+                }
+                self.detail.name = self.detailName;
+                self.detail.memo = self.detailMemo;
+                self.detail.deadline = self.detailDeadLine;
             });
         }
 
