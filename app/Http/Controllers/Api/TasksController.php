@@ -22,20 +22,14 @@ class TasksController extends \App\Http\Controllers\Controller
 
     public function add(Request $request) {
         $tasks= new TasksService();
-        return $tasks->addTask($request->only(['name', 'list_id']);
+        return $tasks->addTask($request->only(['name', 'list_id']));
     }
 
     public function update(Request $request) {
 //        Log::debug($_POST);
 
-        $data = [
-            'id' => $request->input('id'),
-            'name' => $request->input('name'),
-            'memo' => $request->input('memo'),
-            'deadline' => $request->input('deadline'),
-        ];
         $tasks= new TasksService();
-        return $tasks->updateTask($data);
+        return $tasks->updateTask($request->only(['id', 'name', 'memo', 'deadline']));
     }
 
     public function complete(Request $request) {

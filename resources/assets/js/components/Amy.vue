@@ -38,9 +38,9 @@
                     <input type="hidden" id="categoryid" value="1">
                 </form>
                 <div class="ui middle aligned divided list task-list">
-                    <div class="task-list--each item" v-for="task in tasks" v-bind:data-id="task.id">
-                        <div class="content" draggable="true">
-                            <div class="ui checkbox">
+                    <div class="task-list--each item">
+                        <div class="content">
+                            <div class="ui checkbox" v-for="task in tasks" v-bind:data-id="task.id" draggable="true">
                                 <input type="checkbox" v-on:click="taskComplete(task.id, $event)">
                                 <label>{{ task.name }}</label>
                                 <i class="fa fa-pencil" aria-hidden="true" v-on:click="taskDetail(task, $event)"></i>
@@ -213,7 +213,7 @@ module.exports = {
             }).then(function(response) {
                 console.log('ok');
                 for (var i = 0; i < self.tasks.length; i++) {
-                    if (self.tasks[i].id = detail.id) {
+                    if (self.tasks[i].id == self.detail.id) {
                         self.tasks[i].name = self.detailName;
                     }
                 }
