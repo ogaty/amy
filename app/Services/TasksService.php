@@ -33,11 +33,13 @@ class TasksService extends BaseService {
     public function addTask($data) {
 //        $data = $request->input('request');
 
+/*
         $this->tasks->name = $data['name'];
         $this->tasks->completed = 0;
         $this->tasks->list_id = $data['list_id'];
         $this->tasks->save($data);
-        return $this->tasks->toArray();
+*/
+        return $this->tasks::create($data);
     }
 
     public function removeTask() {

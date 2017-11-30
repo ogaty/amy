@@ -42,11 +42,11 @@ class TasksServiceTest extends TestCase
     {
         $tasks = new TasksService();
         $newTask = $tasks->addTask(['name' => 'newTask', 'list_id' => 0]);
-        $detail = $tasks->getTask($newTask['id']);
+        $detail = $tasks->getTask($newTask->id);
         $this->assertEquals($detail['list_id'], 0);
 
         $newTask = $tasks->addTask(['name' => 'newTask', 'list_id' => 1]);
-        $detail = $tasks->getTask($newTask['id']);
+        $detail = $tasks->getTask($newTask->id);
         $this->assertEquals($detail['list_id'], 1);
     }
 

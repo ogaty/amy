@@ -21,12 +21,8 @@ class TasksController extends \App\Http\Controllers\Controller
     }
 
     public function add(Request $request) {
-        $data = [
-            'name' => $request->input('name'),
-            'list_id' => $request->input('list_id'),
-        ];
         $tasks= new TasksService();
-        return $tasks->addTask($data);
+        return $tasks->addTask($request->only(['name', 'list_id']);
     }
 
     public function update(Request $request) {
