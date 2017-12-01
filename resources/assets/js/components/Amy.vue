@@ -4,7 +4,7 @@
             <ul class="category-list">
                 <li class="category-list--each" draggable="true" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" v-on:click="taskList(list.id, list.name, $event)" v-for="list in categories" v-bind:data-id="list.id">
                     <span class="title">{{ list.name }}</span>
-                    <span class="menu" v-on:click="categoryMenu"><i class="fa fa-pencil" aria-hidden="true"></i></span>
+                    <span class="menu" v-on:click="categoryMenu(list, $event)"><i class="fa fa-pencil" aria-hidden="true"></i></span>
                 </li>
             </ul>
             <form v-on:submit.prevent="addCategory" autocomplete="off">
@@ -17,12 +17,13 @@
                   <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Modal Header</h4>
+                        <h4 class="modal-title">{{  listDetail.name }}</h4>
                     </div>
                     <div class="modal-body">
-                       <p>Some text in the modal.</p>
+                       <input type="text" v-bind:value="listDetail.name" v-model="listDetailName">
                     </div>
                     <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal" v-on:click="updateCategory(listDetail, $event)">保存</button>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -90,6 +91,7 @@ module.exports = {
             completedtasks: window.initCompletedTask,
             categories: window.initList,
             detail: window.initDetail,
+            listDetail: window.initListDetail,
             centerCategoryname: "INBOX",
             newCategory: "",
             newTask: "",
@@ -98,6 +100,7 @@ module.exports = {
             detailDeadLine: "",
             listId: 1,
             displayDetail: false,
+            listDetailName: ""
         }
     },
     methods: {
@@ -161,10 +164,12 @@ module.exports = {
                     _.tasks = response.data;
                 });
         },
-        categoryMenu: function(e) {
-                    $('#category-modal-title').text($(e.currentTarget).parent().find('.title').text());
-                    $('#categoryModal').modal();
-                },
+        categoryMenu: function(list, e) {
+            this.listDetail.name = list.name;
+            this.listDetail.id= list.id;
+            this.listDetailName = list.name;
+            $('#categoryModal').modal();
+        },
         addCategory: function(e) {
             var _ = this;
             $.ajax({
@@ -220,6 +225,23 @@ module.exports = {
                 self.detail.name = self.detailName;
                 self.detail.memo = self.detailMemo;
                 self.detail.deadline = self.detailDeadLine;
+            });
+        },
+        updateCategory: function(detail, event) {
+            let params = new URLSearchParams();
+            params.append('id', detail.id);
+            params.append('name', this.listDetailName);
+            let self = this;
+            axios.post('/api/categories/update', params, {
+                headers: {'X-CSRF-TOKEN': window.Laravel.csrfToken}
+            }).then(function(response) {
+                console.log('ok');
+                for (var i = 0; i < self.categories.length; i++) {
+                    if (self.categories[i].id == self.listDetail.id) {
+                        self.categories[i].name = self.listDetailName;
+                    }
+                }
+                self.listDetail.name = self.listDetailName;
             });
         }
 

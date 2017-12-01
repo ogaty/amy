@@ -4,6 +4,8 @@ namespace App\Services;
 use \App\Services\BaseService;
 use \App\Eloquent\Categories;
 
+use Illuminate\Support\Facades\Log;
+
 class CategoriesService extends BaseService {
 
     public $categories;
@@ -50,9 +52,8 @@ class CategoriesService extends BaseService {
     public function updateCategory($data) {
 //        $data = $request->input('request');
 
-        $this->categories->id = $data['id'];
-        $this->categories->name = $data['name'];
-        $this->categories->save($data);
+        $this->categories->where('id', $data['id'])
+              ->update(['name' => $data['name']]);
         return $this->categories->toArray();
     }
 

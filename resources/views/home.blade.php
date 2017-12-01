@@ -10,6 +10,7 @@
         window.initTask = {!! json_encode($tasks); !!}
         window.initCompletedTask = {!! json_encode($completed_tasks); !!}
         window.initDetail= {!! json_encode($detail); !!}
+        window.initListDetail= {};
 </script>
 <style>
 .modal-content {

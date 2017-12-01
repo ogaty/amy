@@ -42254,6 +42254,7 @@ module.exports = {
             completedtasks: window.initCompletedTask,
             categories: window.initList,
             detail: window.initDetail,
+            listDetail: window.initListDetail,
             centerCategoryname: "INBOX",
             newCategory: "",
             newTask: "",
@@ -42261,7 +42262,8 @@ module.exports = {
             detailMemo: "",
             detailDeadLine: "",
             listId: 1,
-            displayDetail: false
+            displayDetail: false,
+            listDetailName: ""
         };
     },
     methods: {
@@ -42324,8 +42326,10 @@ module.exports = {
                 _.tasks = response.data;
             });
         },
-        categoryMenu: function categoryMenu(e) {
-            $('#category-modal-title').text($(e.currentTarget).parent().find('.title').text());
+        categoryMenu: function categoryMenu(list, e) {
+            this.listDetail.name = list.name;
+            this.listDetail.id = list.id;
+            this.listDetailName = list.name;
             $('#categoryModal').modal();
         },
         addCategory: function addCategory(e) {
@@ -42384,6 +42388,23 @@ module.exports = {
                 self.detail.memo = self.detailMemo;
                 self.detail.deadline = self.detailDeadLine;
             });
+        },
+        updateCategory: function updateCategory(detail, event) {
+            var params = new URLSearchParams();
+            params.append('id', detail.id);
+            params.append('name', this.listDetailName);
+            var self = this;
+            axios.post('/api/categories/update', params, {
+                headers: { 'X-CSRF-TOKEN': window.Laravel.csrfToken }
+            }).then(function (response) {
+                console.log('ok');
+                for (var i = 0; i < self.categories.length; i++) {
+                    if (self.categories[i].id == self.listDetail.id) {
+                        self.categories[i].name = self.listDetailName;
+                    }
+                }
+                self.listDetail.name = self.listDetailName;
+            });
         }
 
     }
@@ -42392,8 +42413,8 @@ module.exports = {
 if (module.exports.__esModule) module.exports = module.exports.default
 var __vue__options__ = (typeof module.exports === "function"? module.exports.options: module.exports)
 if (__vue__options__.functional) {console.error("[vueify] functional components are not supported and should be defined in plain js files using render functions.")}
-__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"wrap"},[_c('div',{staticClass:"left-box"},[_c('ul',{staticClass:"category-list"},_vm._l((_vm.categories),function(list){return _c('li',{staticClass:"category-list--each",attrs:{"draggable":"true","ondragover":"handleDragOver(event)","ondrop":"handleDrop(event)","data-id":list.id},on:{"click":function($event){_vm.taskList(list.id, list.name, $event)}}},[_c('span',{staticClass:"title"},[_vm._v(_vm._s(list.name))]),_vm._v(" "),_c('span',{staticClass:"menu",on:{"click":_vm.categoryMenu}},[_c('i',{staticClass:"fa fa-pencil",attrs:{"aria-hidden":"true"}})])])})),_vm._v(" "),_c('form',{attrs:{"autocomplete":"off"},on:{"submit":function($event){$event.preventDefault();_vm.addCategory($event)}}},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.newCategory),expression:"newCategory"}],staticClass:"add-category",attrs:{"type":"text","name":"add-category","placeholder":"add category"},domProps:{"value":(_vm.newCategory)},on:{"input":function($event){if($event.target.composing){ return; }_vm.newCategory=$event.target.value}}})]),_vm._v(" "),_vm._m(0)]),_vm._v(" "),_c('div',{staticClass:"task-wrap"},[_c('div',{staticClass:"task-wrap-left"},[_c('h2',{staticClass:"task-wrap-left--head"},[_vm._v(_vm._s(_vm.centerCategoryname))]),_vm._v(" "),_c('form',{attrs:{"autocomplete":"off"},on:{"submit":function($event){$event.preventDefault();_vm.addTask($event)}}},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.newTask),expression:"newTask"}],staticClass:"task-wrap-left--add-task",attrs:{"type":"text","name":"add-task","placeholder":"add task"},domProps:{"value":(_vm.newTask)},on:{"input":function($event){if($event.target.composing){ return; }_vm.newTask=$event.target.value}}}),_vm._v(" "),_c('input',{attrs:{"type":"hidden","id":"categoryid","value":"1"}})]),_vm._v(" "),_c('div',{staticClass:"ui middle aligned divided list task-list"},[_c('div',{staticClass:"task-list--each item"},[_c('div',{staticClass:"content"},_vm._l((_vm.tasks),function(task){return _c('div',{staticClass:"ui checkbox",attrs:{"data-id":task.id,"draggable":"true"}},[_c('input',{attrs:{"type":"checkbox"},on:{"click":function($event){_vm.taskComplete(task.id, $event)}}}),_vm._v(" "),_c('label',[_vm._v(_vm._s(task.name))]),_vm._v(" "),_c('i',{staticClass:"fa fa-pencil",attrs:{"aria-hidden":"true"},on:{"click":function($event){_vm.taskDetail(task, $event)}}})])}))])]),_vm._v(" "),_c('h2',{staticClass:"completed-tasks--head"},[_vm._v("完了タスク")]),_vm._v(" "),_c('div',{staticClass:"ui middle aligned divided list task-list"},_vm._l((_vm.completedtasks),function(task){return _c('div',{staticClass:"completed-task-list--each",attrs:{"data-id":task.id}},[_c('div',{staticClass:"content"},[_c('div',{staticClass:"ui checkbox"},[_c('input',{attrs:{"type":"checkbox","checked":""},on:{"click":function($event){}}}),_vm._v(" "),_c('label',[_vm._v(_vm._s(task.name))])])])])}))]),_vm._v(" "),(_vm.displayDetail)?_c('div',{staticClass:"task-wrap-right"},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.detailName),expression:"detailName"}],attrs:{"type":"text"},domProps:{"value":_vm.detail.name,"value":(_vm.detailName)},on:{"input":function($event){if($event.target.composing){ return; }_vm.detailName=$event.target.value}}}),_vm._v(" "),_c('h3',[_vm._v("期限")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.detailDeadLine),expression:"detailDeadLine"}],attrs:{"type":"date"},domProps:{"value":_vm.detail.deadline,"value":(_vm.detailDeadLine)},on:{"input":function($event){if($event.target.composing){ return; }_vm.detailDeadLine=$event.target.value}}}),_vm._v(" "),_c('div',{staticClass:"task-detail-memo"},[_c('h3',[_vm._v("memo")]),_vm._v(" "),_c('textarea',{directives:[{name:"model",rawName:"v-model",value:(_vm.detailMemo),expression:"detailMemo"}],domProps:{"value":_vm.detail.memo,"value":(_vm.detailMemo)},on:{"input":function($event){if($event.target.composing){ return; }_vm.detailMemo=$event.target.value}}})]),_vm._v(" "),_c('button',{on:{"click":function($event){_vm.updateDetail(_vm.detail, $event)}}},[_vm._v("保存")])]):_vm._e()])])}
-__vue__options__.staticRenderFns = [function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"modal fade",attrs:{"id":"categoryModal","role":"dialog"}},[_c('div',{staticClass:"modal-dialog"},[_c('div',{staticClass:"modal-content"},[_c('div',{staticClass:"modal-header"},[_c('button',{staticClass:"close",attrs:{"type":"button","data-dismiss":"modal"}},[_vm._v("×")]),_vm._v(" "),_c('h4',{staticClass:"modal-title"},[_vm._v("Modal Header")])]),_vm._v(" "),_c('div',{staticClass:"modal-body"},[_c('p',[_vm._v("Some text in the modal.")])]),_vm._v(" "),_c('div',{staticClass:"modal-footer"},[_c('button',{staticClass:"btn btn-default",attrs:{"type":"button","data-dismiss":"modal"}},[_vm._v("Close")])])])])])}]
+__vue__options__.render = function render () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"wrap"},[_c('div',{staticClass:"left-box"},[_c('ul',{staticClass:"category-list"},_vm._l((_vm.categories),function(list){return _c('li',{staticClass:"category-list--each",attrs:{"draggable":"true","ondragover":"handleDragOver(event)","ondrop":"handleDrop(event)","data-id":list.id},on:{"click":function($event){_vm.taskList(list.id, list.name, $event)}}},[_c('span',{staticClass:"title"},[_vm._v(_vm._s(list.name))]),_vm._v(" "),_c('span',{staticClass:"menu",on:{"click":function($event){_vm.categoryMenu(list, $event)}}},[_c('i',{staticClass:"fa fa-pencil",attrs:{"aria-hidden":"true"}})])])})),_vm._v(" "),_c('form',{attrs:{"autocomplete":"off"},on:{"submit":function($event){$event.preventDefault();_vm.addCategory($event)}}},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.newCategory),expression:"newCategory"}],staticClass:"add-category",attrs:{"type":"text","name":"add-category","placeholder":"add category"},domProps:{"value":(_vm.newCategory)},on:{"input":function($event){if($event.target.composing){ return; }_vm.newCategory=$event.target.value}}})]),_vm._v(" "),_c('div',{staticClass:"modal fade",attrs:{"id":"categoryModal","role":"dialog"}},[_c('div',{staticClass:"modal-dialog"},[_c('div',{staticClass:"modal-content"},[_c('div',{staticClass:"modal-header"},[_c('button',{staticClass:"close",attrs:{"type":"button","data-dismiss":"modal"}},[_vm._v("×")]),_vm._v(" "),_c('h4',{staticClass:"modal-title"},[_vm._v(_vm._s(_vm.listDetail.name))])]),_vm._v(" "),_c('div',{staticClass:"modal-body"},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.listDetailName),expression:"listDetailName"}],attrs:{"type":"text"},domProps:{"value":_vm.listDetail.name,"value":(_vm.listDetailName)},on:{"input":function($event){if($event.target.composing){ return; }_vm.listDetailName=$event.target.value}}})]),_vm._v(" "),_c('div',{staticClass:"modal-footer"},[_c('button',{staticClass:"btn btn-default",attrs:{"type":"button","data-dismiss":"modal"},on:{"click":function($event){_vm.updateCategory(_vm.listDetail, $event)}}},[_vm._v("保存")]),_vm._v(" "),_c('button',{staticClass:"btn btn-default",attrs:{"type":"button","data-dismiss":"modal"}},[_vm._v("Close")])])])])])]),_vm._v(" "),_c('div',{staticClass:"task-wrap"},[_c('div',{staticClass:"task-wrap-left"},[_c('h2',{staticClass:"task-wrap-left--head"},[_vm._v(_vm._s(_vm.centerCategoryname))]),_vm._v(" "),_c('form',{attrs:{"autocomplete":"off"},on:{"submit":function($event){$event.preventDefault();_vm.addTask($event)}}},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.newTask),expression:"newTask"}],staticClass:"task-wrap-left--add-task",attrs:{"type":"text","name":"add-task","placeholder":"add task"},domProps:{"value":(_vm.newTask)},on:{"input":function($event){if($event.target.composing){ return; }_vm.newTask=$event.target.value}}}),_vm._v(" "),_c('input',{attrs:{"type":"hidden","id":"categoryid","value":"1"}})]),_vm._v(" "),_c('div',{staticClass:"ui middle aligned divided list task-list"},[_c('div',{staticClass:"task-list--each item"},[_c('div',{staticClass:"content"},_vm._l((_vm.tasks),function(task){return _c('div',{staticClass:"ui checkbox",attrs:{"data-id":task.id,"draggable":"true"}},[_c('input',{attrs:{"type":"checkbox"},on:{"click":function($event){_vm.taskComplete(task.id, $event)}}}),_vm._v(" "),_c('label',[_vm._v(_vm._s(task.name))]),_vm._v(" "),_c('i',{staticClass:"fa fa-pencil",attrs:{"aria-hidden":"true"},on:{"click":function($event){_vm.taskDetail(task, $event)}}})])}))])]),_vm._v(" "),_c('h2',{staticClass:"completed-tasks--head"},[_vm._v("完了タスク")]),_vm._v(" "),_c('div',{staticClass:"ui middle aligned divided list task-list"},_vm._l((_vm.completedtasks),function(task){return _c('div',{staticClass:"completed-task-list--each",attrs:{"data-id":task.id}},[_c('div',{staticClass:"content"},[_c('div',{staticClass:"ui checkbox"},[_c('input',{attrs:{"type":"checkbox","checked":""},on:{"click":function($event){}}}),_vm._v(" "),_c('label',[_vm._v(_vm._s(task.name))])])])])}))]),_vm._v(" "),(_vm.displayDetail)?_c('div',{staticClass:"task-wrap-right"},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.detailName),expression:"detailName"}],attrs:{"type":"text"},domProps:{"value":_vm.detail.name,"value":(_vm.detailName)},on:{"input":function($event){if($event.target.composing){ return; }_vm.detailName=$event.target.value}}}),_vm._v(" "),_c('h3',[_vm._v("期限")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.detailDeadLine),expression:"detailDeadLine"}],attrs:{"type":"date"},domProps:{"value":_vm.detail.deadline,"value":(_vm.detailDeadLine)},on:{"input":function($event){if($event.target.composing){ return; }_vm.detailDeadLine=$event.target.value}}}),_vm._v(" "),_c('div',{staticClass:"task-detail-memo"},[_c('h3',[_vm._v("memo")]),_vm._v(" "),_c('textarea',{directives:[{name:"model",rawName:"v-model",value:(_vm.detailMemo),expression:"detailMemo"}],domProps:{"value":_vm.detail.memo,"value":(_vm.detailMemo)},on:{"input":function($event){if($event.target.composing){ return; }_vm.detailMemo=$event.target.value}}})]),_vm._v(" "),_c('button',{on:{"click":function($event){_vm.updateDetail(_vm.detail, $event)}}},[_vm._v("保存")])]):_vm._e()])])}
+__vue__options__.staticRenderFns = []
 if (module.hot) {(function () {  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
