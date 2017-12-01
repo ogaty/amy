@@ -46,7 +46,8 @@ class CategoriesServiceTest extends TestCase
     {
         $category = new CategoriesService();
         $detail = $category->addCategory(['name' => 'testCate1']);
-        $detail = $category->updateCategory(['id' => $detail['id'], 'name' => 'testCate2']);
+        $category->updateCategory(['id' => $detail['id'], 'name' => 'testCate2']);
+        $detail = $category->getListDetail($detail['id']);
         $this->assertEquals($detail['name'], 'testCate2');
     }
 }
