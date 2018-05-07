@@ -72,6 +72,9 @@ class TasksService extends BaseService {
                 $tasks->deadline = $data['deadline'];
             }
         }
+        if (isset($data['star'])) {
+            $tasks->star = $data['star'];
+        }
         $tasks->update();
         return $tasks->toArray();
     }

@@ -29,7 +29,7 @@ class TasksController extends \App\Http\Controllers\Controller
 //        Log::debug($_POST);
 
         $tasks= new TasksService();
-        return $tasks->updateTask($request->only(['id', 'name', 'memo', 'deadline']));
+        return $tasks->updateTask($request->only(['id', 'name', 'memo', 'deadline', 'star']));
     }
 
     public function complete(Request $request) {

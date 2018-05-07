@@ -39,23 +39,29 @@
                     <input type="hidden" id="categoryid" value="1">
                 </form>
                 <div class="ui middle aligned divided list task-list">
-                    <div class="task-list--each item">
+                    <div class="item">
                         <div class="content">
-                            <div class="ui checkbox" v-for="task in tasks" v-bind:data-id="task.id" draggable="true">
-                                <input type="checkbox" v-on:click="taskComplete(task.id, $event)">
-                                <label>{{ task.name }}</label>
-                                <i class="fa fa-pencil" aria-hidden="true" v-on:click="taskDetail(task, $event)"></i>
+                            <div class="ui checkbox task-list--each" v-for="task in tasks" v-bind:data-id="task.id" draggable="true">
+                                <label for="comp">
+                                    <input type="checkbox" name="comp" v-on:click="taskComplete(task.id, $event)">
+                                </label>
+                                <span>{{ task.name }}</span>
+                                <i class="fa fa-star task-list--button" aria-hidden="true" v-if="task.star" v-on:click="removeStar(task, $event)"></i>
+                                <i class="fa fa-star-o task-list--button" aria-hidden="true" v-else v-on:click="addStar(task, $event)"></i>
+                                <i class="fa fa-pencil task-list--button" aria-hidden="true" v-on:click="taskDetail(task, $event)"></i>
                             </div>
                         </div>
                     </div>
                 </div>
                 <h2 class="completed-tasks--head">完了タスク</h2>
                 <div class="ui middle aligned divided list task-list">
-                    <div class="completed-task-list--each" v-for="task in completedtasks" v-bind:data-id="task.id">
+                    <div class="">
                         <div class="content">
-                            <div class="ui checkbox">
-                                <input type="checkbox" v-on:click="" checked>
-                                <label>{{ task.name }}</label>
+                            <div class="ui checkbox completed-task-list--each" v-for="task in completedtasks" v-bind:data-id="task.id">
+                                <label for="comp">
+                                    <input type="checkbox" name="comp" v-on:click="" checked>
+                                </label>
+                                <span>{{ task.name }}</span>
                             </div>
                         </div>
                     </div>
@@ -99,6 +105,7 @@ module.exports = {
             detailMemo: "",
             detailDeadLine: "",
             listId: 1,
+            taskId: 0,
             displayDetail: false,
             listDetailName: ""
         }
@@ -118,40 +125,30 @@ module.exports = {
             this.displayDetail = true;
         },
         taskComplete: function(id, e) {
-            var _ = this;
-            $.ajax({
-                type: 'post',
-                url: '/api/tasks/complete',
-                data: {
-                    task: {
-                        id: id,
-                        completed: 1
-                    }
-                },
-                headers: {
-                    'X-CSRF-TOKEN': window.Laravel.csrfToken,
-                    'USER-ID': window.amy.user_id,
-                    'TOKEN': window.amy.token,
-                    'TOKEN-ID': window.amy.token_id,
-                }
-            }).done(function (ret) {
+            let params = new URLSearchParams();
+            params.append('id', id);
+            params.append('completed', 1);
+            this.id = id;
+            this.completed = 1;
+            let self = this;
+            axios.post('/api/tasks/complete', params, {
+                headers: {'X-CSRF-TOKEN': window.Laravel.csrfToken}
+            }).then(function(response) {
                 console.log('success');
                 console.log($(ret));
                 var index = 0;
-                for (var i = 0; i < _.tasks.length; i++) {
-                    if (_.tasks[i].id == ret.id) {
+                for (var i = 0; i < self.tasks.length; i++) {
+                    if (self.tasks[i].id == response.id) {
                         console.log(i);
                         index = i;
                         break;
                     }
                 }
-                _.completedtasks.push({
-                           name:_.tasks[index].name,
-                           id:_.tasks[index].id
+                self.completedtasks.push({
+                           name:self.newCategory,
+                           id:self.tasks[index].id
                           });
-                _.tasks.splice(index, 1);
-            }).fail(function () {
-                console.log('error');
+                self.tasks.splice(index, 1);
             });
         },
         taskList: function (id, name, event) {
@@ -171,25 +168,17 @@ module.exports = {
             $('#categoryModal').modal();
         },
         addCategory: function(e) {
-            var _ = this;
-            $.ajax({
-                        type: 'post',
-                        url: '/api/categories/add',
-                        data: {
-                            name: this.newCategory
-                        },
-                        headers: {
-                            'X-CSRF-TOKEN': window.Laravel.csrfToken,
-                            'USER-ID': window.amy.user_id,
-                            'TOKEN': window.amy.token,
-                            'TOKEN-ID': window.amy.token_id,
-                        }
-                    }).done(function(data) {
-                          _.categories.push({name:_.newCategory});
-                          _.newCategory = "";
-                    }).fail(function() {
-                          console.log('error');
-                    });
+            let params = new URLSearchParams();
+            params.append('name', this.newCategory);
+            this.taskId = detail.id;
+            let self = this;
+            axios.post('/api/categories/add', params, {
+                headers: {'X-CSRF-TOKEN': window.Laravel.csrfToken}
+            }).then(function(response) {
+                self.categories.push({name: self.newCategory});
+                self.newCategory = "";
+                console.log('ok');
+            });
         },
         addTask: function(e) {
             var _ = this;
@@ -225,6 +214,40 @@ module.exports = {
                 self.detail.name = self.detailName;
                 self.detail.memo = self.detailMemo;
                 self.detail.deadline = self.detailDeadLine;
+            });
+        },
+        addStar: function(detail, event) {
+            let params = new URLSearchParams();
+            params.append('id', detail.id);
+            params.append('star', 1);
+            this.taskId = detail.id;
+            let self = this;
+            axios.post('/api/tasks/update', params, {
+                headers: {'X-CSRF-TOKEN': window.Laravel.csrfToken}
+            }).then(function(response) {
+                console.log('ok');
+                for (var i = 0; i < self.tasks.length; i++) {
+                    if (self.tasks[i].id == self.taskId) {
+                        self.tasks[i].star = 1;
+                    }
+                }
+            });
+        },
+        removeStar: function(detail, event) {
+            let params = new URLSearchParams();
+            params.append('id', detail.id);
+            params.append('star', 0);
+            this.taskId = detail.id;
+            let self = this;
+            axios.post('/api/tasks/update', params, {
+                headers: {'X-CSRF-TOKEN': window.Laravel.csrfToken}
+            }).then(function(response) {
+                console.log('ok');
+                for (var i = 0; i < self.tasks.length; i++) {
+                    if (self.tasks[i].id == self.taskId) {
+                        self.tasks[i].star = 0;
+                    }
+                }
             });
         },
         updateCategory: function(detail, event) {

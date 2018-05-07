@@ -74,12 +74,15 @@ ul {
     list-style: none;
 }
 .task-list--each {
-    display: flex;
-    justify-content: flex-start;
     margin-top: 8px;
+    padding-left: 20px;
+    border-bottom: 1px solid #ccc;
 }
 .task-list--check {
     margin-right: 16px;
+}
+.task-list--button {
+    float: right;
 }
 .completed-tasks--head {
     margin-top: 16px;
@@ -91,6 +94,8 @@ ul {
 .completed-task-list--each {
     text-decoration: line-through;
     margin-top: 8px;
+    padding-left: 20px;
+    border-bottom: 1px solid #ccc;
 }
 
 .menu {
